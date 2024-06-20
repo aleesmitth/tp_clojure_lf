@@ -34,7 +34,7 @@
 (declare palabra-reservada?)              ; IMPLEMENTAR
 (declare operador?)                       ; IMPLEMENTAR
 (declare anular-invalidos)                ; IMPLEMENTAR
-(declare cargar-linea)                    ; IMPLEMENTAR
+(declare cargar-linea)                    ; IMPLEMENTAR [OK]
 (declare expandir-nexts)                  ; IMPLEMENTAR
 (declare dar-error)                       ; IMPLEMENTAR
 (declare variable-float?)                 ; IMPLEMENTAR
