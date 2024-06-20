@@ -37,9 +37,9 @@
 (declare cargar-linea)                    ; IMPLEMENTAR [OK]
 (declare expandir-nexts)                  ; IMPLEMENTAR
 (declare dar-error)                       ; IMPLEMENTAR
-(declare variable-float?)                 ; IMPLEMENTAR
-(declare variable-integer?)               ; IMPLEMENTAR
-(declare variable-string?)                ; IMPLEMENTAR
+(declare variable-float?)                 ; IMPLEMENTAR [OK]
+(declare variable-integer?)               ; IMPLEMENTAR [OK]
+(declare variable-string?)                ; IMPLEMENTAR [OK]
 (declare contar-sentencias)               ; IMPLEMENTAR
 (declare buscar-lineas-restantes)         ; IMPLEMENTAR
 (declare continuar-linea)                 ; IMPLEMENTAR
