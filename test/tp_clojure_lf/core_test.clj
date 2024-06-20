@@ -3,7 +3,7 @@
             [tp-clojure-lf.core :refer :all]))
 
 ;;
-;; Tests cargar-linea
+;; Pruebas para cargar-linea
 ;;
 (deftest test-cargar-linea-1
   (testing "Probando la funcion cargar-linea agregando primer instruccion"
