@@ -48,7 +48,7 @@
 (declare preprocesar-expresion)           ; IMPLEMENTAR
 (declare desambiguar)                     ; IMPLEMENTAR
 (declare precedencia)                     ; IMPLEMENTAR [OK]
-(declare aridad)                          ; IMPLEMENTAR
+(declare aridad)                          ; IMPLEMENTAR [OK]
 (declare eliminar-cero-decimal)           ; IMPLEMENTAR [OK]
 (declare eliminar-cero-entero)            ; IMPLEMENTAR [OK]
 
@@ -977,7 +977,41 @@
 ; 3
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn aridad [token]
-  )
+  (cond
+    (= token 'MID3$) 3
+    (or (= token 'MID$)
+        (= token '*)
+        (= token '/)
+        (= token '+)
+        (= token '-)
+        (= token '<)
+        (= token '>)
+        (= token '=)
+        (= token '<=)
+        (= token '>=)
+        (= token '<>)
+        (= token \^)
+        (= token 'AND)
+        (= token 'OR)
+        (= token 'LET)) 2
+    (or (= token 'SIN)
+        (= token 'ATN)
+        (= token 'ASC)
+        (= token 'CHR$)
+        (= token 'STR$)
+        (= token 'INT)
+        (= token 'LEN)
+        (= token 'LOAD)
+        (= token 'SAVE)
+        (= token 'PRINT)
+        (= token 'DATA)
+        (= token 'READ)
+        (= token 'REM)
+        (= token 'RESTORE)
+        (= token 'NEXT)
+        (= token 'GOTO)) 1
+    :else 0
+    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; eliminar-cero-decimal: recibe un numero y lo retorna sin ceros
