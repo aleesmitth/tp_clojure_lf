@@ -35,12 +35,12 @@
 (declare operador?)                       ; IMPLEMENTAR
 (declare anular-invalidos)                ; IMPLEMENTAR
 (declare cargar-linea)                    ; IMPLEMENTAR [OK]
-(declare expandir-nexts)                  ; IMPLEMENTAR
+(declare expandir-nexts)                  ; IMPLEMENTAR [OK]
 (declare dar-error)                       ; IMPLEMENTAR
 (declare variable-float?)                 ; IMPLEMENTAR [OK]
 (declare variable-integer?)               ; IMPLEMENTAR [OK]
 (declare variable-string?)                ; IMPLEMENTAR [OK]
-(declare contar-sentencias)               ; IMPLEMENTAR
+(declare contar-sentencias)               ; IMPLEMENTAR [OK]
 (declare buscar-lineas-restantes)         ; IMPLEMENTAR
 (declare continuar-linea)                 ; IMPLEMENTAR
 (declare extraer-data)                    ; IMPLEMENTAR
@@ -722,7 +722,12 @@
 ; ((PRINT 1) (NEXT A) (NEXT B))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn expandir-nexts [n]
-  )
+  (mapcat
+    (fn [sublist]
+      (if (= (first sublist) 'NEXT)
+        (map (fn [x] (list 'NEXT x)) (remove #(= % (symbol ",")) (rest sublist)))
+        [sublist]))
+    n))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; dar-error: recibe un error (codigo o mensaje) y el puntero de
@@ -797,7 +802,7 @@
 (defn contar-sentencias [nro-linea amb]
   (let [linea (first (filter #(= nro-linea (first %)) (first amb)))]
     (if linea
-      (count (rest linea))
+      (count (expandir-nexts (rest linea)))
       0)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

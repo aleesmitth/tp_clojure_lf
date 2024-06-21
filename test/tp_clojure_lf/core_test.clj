@@ -42,7 +42,7 @@
     ))
 
 (deftest test-variable-float?-con-variable-integer
-  (testing "Probando la función variable-float? con una variable integer"
+  (testing "Probando la funcion variable-float? con una variable integer"
     (is (not (variable-float? 'X%))) ; debería retornar falso
     ))
 
@@ -91,16 +91,34 @@
 ;; Pruebas para contar-sentencias
 ;;
 (deftest test-contar-sentencias-10
-  (testing "Probando la función contar-sentencias con la línea 10"
+  (testing "Probando la funcion contar-sentencias con la línea 10"
     (let [amb [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [10 1] [] [] [] 0 {}]]
       (is (= (contar-sentencias 10 amb) 2)))))
 
 (deftest test-contar-sentencias-15
-  (testing "Probando la función contar-sentencias con la línea 15"
+  (testing "Probando la funcion contar-sentencias con la línea 15"
     (let [amb [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [10 1] [] [] [] 0 {}]]
       (is (= (contar-sentencias 15 amb) 1)))))
 
 (deftest test-contar-sentencias-20
-  (testing "Probando la función contar-sentencias con la línea 20"
+  (testing "Probando la funcion contar-sentencias con la línea 20"
     (let [amb [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [10 1] [] [] [] 0 {}]]
       (is (= (contar-sentencias 20 amb) 2)))))
+
+;;
+;; Pruebas para expandir-nexts
+;;
+(deftest test-expandir-nexts-1-parametros
+  (testing "Probando la funcion expandir-nexts 1 parametro 2 next"
+    (let [n (list (list 'NEXT 'A (symbol ",") 'B))]
+      (is (= (expandir-nexts n) '((NEXT A) (NEXT B)))))))
+
+(deftest test-expandir-nexts-2-parametros
+  (testing "Probando la funcion expandir-nexts 2 parametros 2 next"
+    (let [n (list '(PRINT 1) (list 'NEXT 'A (symbol ",") 'B))]
+      (is (= (expandir-nexts n) '((PRINT 1) (NEXT A) (NEXT B)))))))
+
+(deftest test-expandir-nexts-3-parametros
+  (testing "Probando la funcion expandir-nexts 2 parametros 3 next"
+    (let [n (list '(PRINT 1) (list 'NEXT 'A (symbol ",") 'B (symbol ",") 'C))]
+      (is (= (expandir-nexts n) '((PRINT 1) (NEXT A) (NEXT B) (NEXT C)))))))
