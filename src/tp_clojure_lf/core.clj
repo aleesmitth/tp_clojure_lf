@@ -49,7 +49,7 @@
 (declare desambiguar)                     ; IMPLEMENTAR
 (declare precedencia)                     ; IMPLEMENTAR
 (declare aridad)                          ; IMPLEMENTAR
-(declare eliminar-cero-decimal)           ; IMPLEMENTAR
+(declare eliminar-cero-decimal)           ; IMPLEMENTAR [OK]
 (declare eliminar-cero-entero)            ; IMPLEMENTAR
 
 (defn -main
@@ -960,7 +960,9 @@
 ; A
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn eliminar-cero-decimal [n]
-  )
+  (if (and (float? n) (zero? (mod n 1.0)))
+    (int n)
+    n))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; eliminar-cero-entero: recibe un simbolo y lo retorna convertido

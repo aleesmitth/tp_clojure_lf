@@ -122,3 +122,30 @@
   (testing "Probando la funcion expandir-nexts 2 parametros 3 next"
     (let [n (list '(PRINT 1) (list 'NEXT 'A (symbol ",") 'B (symbol ",") 'C))]
       (is (= (expandir-nexts n) '((PRINT 1) (NEXT A) (NEXT B) (NEXT C)))))))
+
+;;
+;; Pruebas para eliminar-cero-decimal
+;;
+(deftest test-eliminar-cero-decimal-con-decimal
+  (testing "Prueba eliminar-cero-decimal con un número decimal"
+    (is (= (eliminar-cero-decimal 1.5) 1.5))))
+
+(deftest test-eliminar-cero-decimal-con-entero-terminado-en-cero
+  (testing "Prueba eliminar-cero-decimal con un número entero terminado en cero"
+    (is (= (eliminar-cero-decimal 150) 150))))
+
+(deftest test-eliminar-cero-decimal-con-decimal-cero
+  (testing "Prueba eliminar-cero-decimal con un número decimal terminado en cero"
+    (is (= (eliminar-cero-decimal 1.50) 1.5))))
+
+(deftest test-eliminar-cero-decimal-con-decimal-doble-cero
+  (testing "Prueba eliminar-cero-decimal con un número decimal terminado en doble cero"
+    (is (= (eliminar-cero-decimal 1.500) 1.5))))
+
+(deftest test-eliminar-cero-decimal-con-entero
+  (testing "Prueba eliminar-cero-decimal con un número entero"
+    (is (= (eliminar-cero-decimal 1.0) 1))))
+
+(deftest test-eliminar-cero-decimal-con-no-numero
+  (testing "Prueba eliminar-cero-decimal con un valor no numérico"
+    (is (= (eliminar-cero-decimal 'A) 'A))))
