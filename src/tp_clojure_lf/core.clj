@@ -45,7 +45,7 @@
 (declare continuar-linea)                 ; IMPLEMENTAR
 (declare extraer-data)                    ; IMPLEMENTAR [OK]
 (declare ejecutar-asignacion)             ; IMPLEMENTAR
-(declare preprocesar-expresion)           ; IMPLEMENTAR
+(declare preprocesar-expresion)           ; IMPLEMENTAR [OK]
 (declare desambiguar)                     ; IMPLEMENTAR
 (declare precedencia)                     ; IMPLEMENTAR [OK]
 (declare aridad)                          ; IMPLEMENTAR [OK]
@@ -917,7 +917,15 @@
 ; (5 + 0 / 2 * 0)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn preprocesar-expresion [expr amb]
-  )
+  (let [vars (last amb)] ; Extract the variables from the environment
+    (map (fn [item] ; Map over each item in the expression
+           (cond
+             (symbol? item) ; If the item is a symbol
+             (if-let [val (get vars item)] ; If the symbol is a variable in the environment
+               val ; Replace it with its value
+               (if (operador? item) item (if (variable-string? item) "" 0)))
+             :else (if (string? item) item 0)))
+         (anular-invalidos expr))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; desambiguar: recibe un expresion y la retorna sin los + unarios,

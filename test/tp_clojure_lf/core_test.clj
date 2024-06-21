@@ -418,3 +418,11 @@
     (is (= 1 (aridad 'NEXT)))
     (is (= 1 (aridad 'GOTO)))
     (is (= 0 (aridad 'OTHER)))))
+
+;;
+;; Pruebas para preprocesar-expresion
+;;
+(deftest test-preprocesar-expresion
+  (testing "Testing preprocesar-expresion"
+    (is (= (preprocesar-expresion '(X$ + " MUNDO" + Z$) ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X$ "HOLA"}]) '("HOLA" + " MUNDO" + "")))
+    (is (= (preprocesar-expresion '(X + . / Y% * Z) ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 5 Y% 2}]) '(5 + 0 / 2 * 0)))))
