@@ -86,3 +86,21 @@
   (testing "Probando la funcion variable-string? con una variable integer"
     (is (not (variable-string? 'X%))) ; debería retornar falso
     ))
+
+;;
+;; Pruebas para contar-sentencias
+;;
+(deftest test-contar-sentencias-10
+  (testing "Probando la función contar-sentencias con la línea 10"
+    (let [amb [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [10 1] [] [] [] 0 {}]]
+      (is (= (contar-sentencias 10 amb) 2)))))
+
+(deftest test-contar-sentencias-15
+  (testing "Probando la función contar-sentencias con la línea 15"
+    (let [amb [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [10 1] [] [] [] 0 {}]]
+      (is (= (contar-sentencias 15 amb) 1)))))
+
+(deftest test-contar-sentencias-20
+  (testing "Probando la función contar-sentencias con la línea 20"
+    (let [amb [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [10 1] [] [] [] 0 {}]]
+      (is (= (contar-sentencias 20 amb) 2)))))
