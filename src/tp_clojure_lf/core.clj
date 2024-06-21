@@ -50,7 +50,7 @@
 (declare precedencia)                     ; IMPLEMENTAR
 (declare aridad)                          ; IMPLEMENTAR
 (declare eliminar-cero-decimal)           ; IMPLEMENTAR [OK]
-(declare eliminar-cero-entero)            ; IMPLEMENTAR
+(declare eliminar-cero-entero)            ; IMPLEMENTAR [OK]
 
 (defn -main
   "Alejandro Nicolás Smith 101730"
@@ -987,8 +987,13 @@
 ; user=> (eliminar-cero-entero -0.5)
 ; "-.5"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn eliminar-cero-entero [n]
-  )
+(defn eliminar-cero-entero [s]
+  (let [str-s (str s)]
+    (cond
+      (nil? s) nil
+      (not (number? s)) str-s
+      (and (<= -1 s 1) (not (integer? s))) (if (neg? s) (str "-" (subs str-s 2)) (subs str-s 1))
+      :else str-s)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Despues de cargarse el archivo, debe mostrarse el valor true

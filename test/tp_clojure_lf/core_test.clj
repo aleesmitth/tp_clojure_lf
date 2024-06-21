@@ -108,17 +108,17 @@
 ;;
 ;; Pruebas para expandir-nexts
 ;;
-(deftest test-expandir-nexts-1-parametros
+(deftest test-expandir-nexts-1-parametros-2-next
   (testing "Probando la funcion expandir-nexts 1 parametro 2 next"
     (let [n (list (list 'NEXT 'A (symbol ",") 'B))]
       (is (= (expandir-nexts n) '((NEXT A) (NEXT B)))))))
 
-(deftest test-expandir-nexts-2-parametros
+(deftest test-expandir-nexts-2-parametros-2-next
   (testing "Probando la funcion expandir-nexts 2 parametros 2 next"
     (let [n (list '(PRINT 1) (list 'NEXT 'A (symbol ",") 'B))]
       (is (= (expandir-nexts n) '((PRINT 1) (NEXT A) (NEXT B)))))))
 
-(deftest test-expandir-nexts-3-parametros
+(deftest test-expandir-nexts-2-parametros-3-next
   (testing "Probando la funcion expandir-nexts 2 parametros 3 next"
     (let [n (list '(PRINT 1) (list 'NEXT 'A (symbol ",") 'B (symbol ",") 'C))]
       (is (= (expandir-nexts n) '((PRINT 1) (NEXT A) (NEXT B) (NEXT C)))))))
@@ -149,3 +149,54 @@
 (deftest test-eliminar-cero-decimal-con-no-numero
   (testing "Prueba eliminar-cero-decimal con un valor no numérico"
     (is (= (eliminar-cero-decimal 'A) 'A))))
+
+;;
+;; Pruebas para eliminar-cero-entero
+;;
+(deftest test-eliminar-cero-entero-con-nil
+  (testing "Prueba eliminar-cero-entero con nil"
+    (is (= (eliminar-cero-entero nil) nil))))
+
+(deftest test-eliminar-cero-entero-con-simbolo
+  (testing "Prueba eliminar-cero-entero con un símbolo"
+    (is (= (eliminar-cero-entero 'A) "A"))))
+
+(deftest test-eliminar-cero-entero-con-cero
+  (testing "Prueba eliminar-cero-entero con cero"
+    (is (= (eliminar-cero-entero 0) "0"))))
+
+(deftest test-eliminar-cero-entero-con-multiples-ceros
+  (testing "Prueba eliminar-cero-entero con multiples ceros"
+    (is (= (eliminar-cero-entero 000) "0"))))
+
+(deftest test-eliminar-cero-entero-con-decimal
+  (testing "Prueba eliminar-cero-entero con un número decimal"
+    (is (= (eliminar-cero-entero 1.5) "1.5"))))
+
+(deftest test-eliminar-cero-entero-con-entero
+  (testing "Prueba eliminar-cero-entero con un número entero"
+    (is (= (eliminar-cero-entero 1) "1"))))
+
+(deftest test-eliminar-cero-entero-con-entero-con-cero-adelante
+  (testing "Prueba eliminar-cero-entero con un número entero con cero adelante"
+    (is (= (eliminar-cero-entero 01) "1"))))
+
+(deftest test-eliminar-cero-entero-con-negativo
+  (testing "Prueba eliminar-cero-entero con un número negativo"
+    (is (= (eliminar-cero-entero -1) "-1"))))
+
+(deftest test-eliminar-cero-entero-con-negativo-decimal
+  (testing "Prueba eliminar-cero-entero con un número decimal negativo"
+    (is (= (eliminar-cero-entero -1.5) "-1.5"))))
+
+(deftest test-eliminar-cero-entero-con-decimal-menor-uno
+  (testing "Prueba eliminar-cero-entero con un número decimal menor a uno"
+    (is (= (eliminar-cero-entero 0.5) ".5"))))
+
+(deftest test-eliminar-cero-entero-con-negativo-decimal-menor-uno
+  (testing "Prueba eliminar-cero-entero con un número decimal negativo menor a uno"
+    (is (= (eliminar-cero-entero -0.5) "-.5"))))
+
+(deftest test-eliminar-cero-entero-con-negativo-decimal-menor-uno-y-multiples-ceros
+  (testing "Prueba eliminar-cero-entero con un número decimal negativo menor a uno y multiples ceros"
+    (is (= (eliminar-cero-entero -00.5) "-.5"))))
