@@ -32,7 +32,7 @@
 (declare aplicar)                         ; COMPLETAR
 
 (declare palabra-reservada?)              ; IMPLEMENTAR [OK]
-(declare operador?)                       ; IMPLEMENTAR
+(declare operador?)                       ; IMPLEMENTAR [OK]
 (declare anular-invalidos)                ; IMPLEMENTAR
 (declare cargar-linea)                    ; IMPLEMENTAR [OK]
 (declare expandir-nexts)                  ; IMPLEMENTAR [OK]
@@ -682,8 +682,10 @@
 ; false
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn operador? [x]
-  (or (= x '+) (= x (symbol "+")))
-  )
+  (if (or (= x "^") (= x (symbol "^"))) true
+                (let [operadores #{'+ '- '* '/ \^ '= '<> '< '<= '> '>=}
+                      x-symbol (if (string? x) (symbol x) x)]
+                  (contains? operadores x-symbol))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; anular-invalidos: recibe una lista de simbolos y la retorna con

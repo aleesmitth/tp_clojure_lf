@@ -243,3 +243,50 @@
 (deftest test-palabra-reservada?-con-no-reservada
   (testing "Prueba palabra-reservada? con una palabra no reservada"
     (is (not (palabra-reservada? 'SPACE)))))
+
+;;
+;; Pruebas para operador?
+;;
+(deftest test-operador?-con-operador
+  (testing "Prueba operador? con un operador"
+    (is (operador? '+))
+    (is (operador? '-))
+    (is (operador? '*))
+    (is (operador? '/))
+    (is (operador? \^))
+    (is (operador? '=))
+    (is (operador? '<>))
+    (is (operador? '<))
+    (is (operador? '<=))
+    (is (operador? '>))
+    (is (operador? '>=))
+    ;; Prueba con simbolos como string
+    (is (operador? (symbol "+")))
+    (is (operador? (symbol "-")))
+    (is (operador? (symbol "*")))
+    (is (operador? (symbol "/")))
+    (is (operador? (symbol "^")))
+    (is (operador? (symbol "=")))
+    (is (operador? (symbol "<>")))
+    (is (operador? (symbol "<")))
+    (is (operador? (symbol "<=")))
+    (is (operador? (symbol ">")))
+    (is (operador? (symbol ">=")))
+    ;; Prueba con strings
+    (is (operador? "+"))
+    (is (operador? "-"))
+    (is (operador? "*"))
+    (is (operador? "/"))
+    (is (operador? "^"))
+    (is (operador? "="))
+    (is (operador? "<>"))
+    (is (operador? "<"))
+    (is (operador? "<="))
+    (is (operador? ">"))
+    (is (operador? ">="))))
+
+  (deftest test-operador?-con-no-operador
+    (testing "Prueba operador? con un símbolo no operador"
+      (is (not (operador? (symbol "%"))))
+      (is (not (operador? (symbol "&"))))
+      (is (not (operador? (symbol "$"))))))
