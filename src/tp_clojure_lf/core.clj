@@ -31,7 +31,7 @@
 (declare evaluar)                         ; COMPLETAR
 (declare aplicar)                         ; COMPLETAR
 
-(declare palabra-reservada?)              ; IMPLEMENTAR
+(declare palabra-reservada?)              ; IMPLEMENTAR [OK]
 (declare operador?)                       ; IMPLEMENTAR
 (declare anular-invalidos)                ; IMPLEMENTAR
 (declare cargar-linea)                    ; IMPLEMENTAR [OK]
@@ -668,8 +668,8 @@
 ; false
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn palabra-reservada? [x]
-  (= x 'REM)
-  )
+  (let [palabras-reservadas #{"EXIT" "ENV" "DATA" "REM" "NEW" "CLEAR" "LIST" "RUN" "LOAD" "SAVE" "LET" "AND" "OR" "INT" "SIN" "ATN" "LEN" "MID$" "STR$" "CHR$" "ASC" "GOTO" "ON" "IF" "THEN" "FOR" "TO" "STEP" "NEXT" "GOSUB" "RETURN" "END" "INPUT" "READ" "RESTORE" "PRINT" "?"}]
+    (contains? palabras-reservadas (str x))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; operador?: predicado para determinar si un identificador es un

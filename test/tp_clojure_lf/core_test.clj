@@ -200,3 +200,46 @@
 (deftest test-eliminar-cero-entero-con-negativo-decimal-menor-uno-y-multiples-ceros
   (testing "Prueba eliminar-cero-entero con un número decimal negativo menor a uno y multiples ceros"
     (is (= (eliminar-cero-entero -00.5) "-.5"))))
+
+;;
+;; Pruebas para palabra-reservada?
+;;
+(deftest test-palabra-reservada
+  (testing "palabra-reservada?"
+    (is (palabra-reservada? 'REM))
+    (is (palabra-reservada? 'NEW))
+    (is (palabra-reservada? 'CLEAR))
+    (is (palabra-reservada? 'LIST))
+    (is (palabra-reservada? 'RUN))
+    (is (palabra-reservada? 'LOAD))
+    (is (palabra-reservada? 'SAVE))
+    (is (palabra-reservada? 'LET))
+    (is (palabra-reservada? 'AND))
+    (is (palabra-reservada? 'OR))
+    (is (palabra-reservada? 'INT))
+    (is (palabra-reservada? 'SIN))
+    (is (palabra-reservada? 'ATN))
+    (is (palabra-reservada? 'LEN))
+    (is (palabra-reservada? 'MID$))
+    (is (palabra-reservada? 'STR$))
+    (is (palabra-reservada? 'CHR$))
+    (is (palabra-reservada? 'ASC))
+    (is (palabra-reservada? 'GOTO))
+    (is (palabra-reservada? 'ON))
+    (is (palabra-reservada? 'IF))
+    (is (palabra-reservada? 'THEN))
+    (is (palabra-reservada? 'FOR))
+    (is (palabra-reservada? 'TO))
+    (is (palabra-reservada? 'STEP))
+    (is (palabra-reservada? 'NEXT))
+    (is (palabra-reservada? 'GOSUB))
+    (is (palabra-reservada? 'RETURN))
+    (is (palabra-reservada? 'END))
+    (is (palabra-reservada? 'INPUT))
+    (is (palabra-reservada? 'READ))
+    (is (palabra-reservada? 'RESTORE))
+    (is (palabra-reservada? 'PRINT))))
+
+(deftest test-palabra-reservada?-con-no-reservada
+  (testing "Prueba palabra-reservada? con una palabra no reservada"
+    (is (not (palabra-reservada? 'SPACE)))))
