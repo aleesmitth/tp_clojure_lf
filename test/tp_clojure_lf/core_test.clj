@@ -358,3 +358,25 @@
   (testing "extraer-data sin datos"
     (is (= (extraer-data (list '(10 (PRINT X)) '(20 (PRINT Y))))
            '()))))
+
+;;
+;; Pruebas para precedencia
+;;
+(deftest test-precedencia
+  (testing "Testing precedencia"
+    (is (= 1 (precedencia 'OR)))
+    (is (= 2 (precedencia 'AND)))
+    (is (= 4 (precedencia '=)))
+    (is (= 4 (precedencia '<>)))
+    (is (= 4 (precedencia '<)))
+    (is (= 4 (precedencia '>)))
+    (is (= 4 (precedencia '<=)))
+    (is (= 4 (precedencia '>)))
+    (is (= 5 (precedencia '+)))
+    (is (= 5 (precedencia '-)))
+    (is (= 6 (precedencia '*)))
+    (is (= 6 (precedencia '/)))
+    (is (= 7 (precedencia '-u)))
+    (is (= 8 (precedencia '\^)))
+    (is (= 9 (precedencia 'MID3$')))
+    (is (= 9 (precedencia 'MID$)))))

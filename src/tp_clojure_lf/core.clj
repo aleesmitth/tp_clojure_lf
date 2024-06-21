@@ -950,6 +950,16 @@
 ; 9
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn precedencia [token]
+  (cond
+    (= token 'OR) 1
+    (= token 'AND) 2
+    (or (= token '=) (= token '<>) (= token '<) (= token '>) (= token '<=) (= token '>=)) 4
+    (or (= token '+) (= token '-)) 5
+    (or (= token '*) (= token '/)) 6
+    (= token '-u) 7
+    (= token \^) 8
+    :else 9
+    )
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
