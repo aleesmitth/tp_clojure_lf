@@ -47,7 +47,7 @@
 (declare ejecutar-asignacion)             ; IMPLEMENTAR
 (declare preprocesar-expresion)           ; IMPLEMENTAR
 (declare desambiguar)                     ; IMPLEMENTAR
-(declare precedencia)                     ; IMPLEMENTAR
+(declare precedencia)                     ; IMPLEMENTAR [OK]
 (declare aridad)                          ; IMPLEMENTAR
 (declare eliminar-cero-decimal)           ; IMPLEMENTAR [OK]
 (declare eliminar-cero-entero)            ; IMPLEMENTAR [OK]
