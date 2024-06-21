@@ -36,7 +36,7 @@
 (declare anular-invalidos)                ; IMPLEMENTAR [OK]
 (declare cargar-linea)                    ; IMPLEMENTAR [OK]
 (declare expandir-nexts)                  ; IMPLEMENTAR [OK]
-(declare dar-error)                       ; IMPLEMENTAR
+(declare dar-error)                       ; IMPLEMENTAR [OK]
 (declare variable-float?)                 ; IMPLEMENTAR [OK]
 (declare variable-integer?)               ; IMPLEMENTAR [OK]
 (declare variable-string?)                ; IMPLEMENTAR [OK]
@@ -755,6 +755,12 @@
 ; ?ERROR DISK FULL IN 100nil
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn dar-error [cod prog-ptrs]
+  (str (if (integer? cod)
+         (buscar-mensaje cod)
+         cod)
+       (if (not= (first prog-ptrs) :ejecucion-inmediata)
+         (str " IN " (first prog-ptrs)))
+       "nil")
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

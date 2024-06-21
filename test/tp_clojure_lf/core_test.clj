@@ -300,7 +300,7 @@
 ;; Pruebas para anular-invalidos?
 ;;
 (deftest test-anular-invalidos
-  (testing "anular-invalidos function"
+  (testing "funcion anular-invalidos"
     (is (= (anular-invalidos '(IF X & * Y < 12 THEN LET ! X = 0))
            '(IF X nil * Y < 12 THEN LET nil X = 0)))
     (is (= (anular-invalidos '(PRINT X + Y))
@@ -311,3 +311,23 @@
            '(IF X < Y THEN LET X = 0)))
     (is (= (anular-invalidos '(IF X < Y THEN LET X = 0 !))
            '(IF X < Y THEN LET X = 0 nil)))))
+
+
+;;
+;; Pruebas para dar-error
+;;
+(deftest test-dar-error-1
+  (testing "funcion dar-error 16"
+    (is (= (dar-error 16 [:ejecucion-inmediata 4]) "?SYNTAX ERRORnil"))))
+
+(deftest test-dar-error-2
+  (testing "funcion dar-error ?ERROR DISK FULL"
+    (is (= (dar-error "?ERROR DISK FULL" [:ejecucion-inmediata 4]) "?ERROR DISK FULLnil"))))
+
+(deftest test-dar-error-3
+  (testing "funcion dar-error 16 en 100 3"
+    (is (= (dar-error 16 [100 3]) "?SYNTAX ERROR IN 100nil"))))
+
+(deftest test-dar-error-4
+  (testing "funcion dar-error ?ERROR DISK FULL en 100 3"
+    (is (= (dar-error "?ERROR DISK FULL" [100 3]) "?ERROR DISK FULL IN 100nil"))))
