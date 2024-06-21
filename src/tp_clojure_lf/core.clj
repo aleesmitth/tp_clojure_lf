@@ -33,7 +33,7 @@
 
 (declare palabra-reservada?)              ; IMPLEMENTAR [OK]
 (declare operador?)                       ; IMPLEMENTAR [OK]
-(declare anular-invalidos)                ; IMPLEMENTAR
+(declare anular-invalidos)                ; IMPLEMENTAR [OK]
 (declare cargar-linea)                    ; IMPLEMENTAR [OK]
 (declare expandir-nexts)                  ; IMPLEMENTAR [OK]
 (declare dar-error)                       ; IMPLEMENTAR
@@ -694,7 +694,13 @@
 ; (IF X nil * Y < 12 THEN LET nil X = 0)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn anular-invalidos [sentencia]
-  )
+  (map #(if (or
+              (not (symbol? %))
+              (palabra-reservada? %)
+              (operador? %)
+              (variable-float? %)
+              (variable-integer? %)
+              (variable-string? %)) % nil) sentencia))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; cargar-linea: recibe una linea de codigo y un ambiente y retorna
@@ -762,7 +768,7 @@
 ; false
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn variable-float? [x]
-  (and (not (variable-integer? x)) (not (variable-string? x))))
+  (and (re-matches #"[a-zA-Z]" (str x)) (not (variable-integer? x)) (not (variable-string? x))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; variable-integer?: predicado para determinar si un identificador

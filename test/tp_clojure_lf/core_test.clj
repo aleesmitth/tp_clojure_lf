@@ -36,6 +36,10 @@
 ;;
 ;; Pruebas para variable-float?
 ;;
+(deftest test-variable-float?-con-variable-float-mas-de-una-letra
+  (testing "Probando la funcion variable-float? con una variable float"
+    (is (not (variable-float? 'XX))) ; debería retornar falso
+    ))
 (deftest test-variable-float?-con-variable-float
   (testing "Probando la funcion variable-float? con una variable float"
     (is (variable-float? 'X)) ; debería retornar verdadero
@@ -290,3 +294,20 @@
       (is (not (operador? (symbol "%"))))
       (is (not (operador? (symbol "&"))))
       (is (not (operador? (symbol "$"))))))
+
+
+;;
+;; Pruebas para anular-invalidos?
+;;
+(deftest test-anular-invalidos
+  (testing "anular-invalidos function"
+    (is (= (anular-invalidos '(IF X & * Y < 12 THEN LET ! X = 0))
+           '(IF X nil * Y < 12 THEN LET nil X = 0)))
+    (is (= (anular-invalidos '(PRINT X + Y))
+           '(PRINT X + Y)))
+    (is (= (anular-invalidos '(PRINT X + Y &))
+           '(PRINT X + Y nil)))
+    (is (= (anular-invalidos '(IF X < Y THEN LET X = 0))
+           '(IF X < Y THEN LET X = 0)))
+    (is (= (anular-invalidos '(IF X < Y THEN LET X = 0 !))
+           '(IF X < Y THEN LET X = 0 nil)))))
