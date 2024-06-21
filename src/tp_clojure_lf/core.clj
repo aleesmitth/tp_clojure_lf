@@ -43,7 +43,7 @@
 (declare contar-sentencias)               ; IMPLEMENTAR [OK]
 (declare buscar-lineas-restantes)         ; IMPLEMENTAR
 (declare continuar-linea)                 ; IMPLEMENTAR
-(declare extraer-data)                    ; IMPLEMENTAR
+(declare extraer-data)                    ; IMPLEMENTAR [OK]
 (declare ejecutar-asignacion)             ; IMPLEMENTAR
 (declare preprocesar-expresion)           ; IMPLEMENTAR
 (declare desambiguar)                     ; IMPLEMENTAR
@@ -51,6 +51,8 @@
 (declare aridad)                          ; IMPLEMENTAR
 (declare eliminar-cero-decimal)           ; IMPLEMENTAR [OK]
 (declare eliminar-cero-entero)            ; IMPLEMENTAR [OK]
+
+(declare expandir-aux)                    ; Funcion auxiliar
 
 (defn -main
   "Alejandro Nicolás Smith 101730"
@@ -718,6 +720,14 @@
   (let [lineas-amb-filtradas (remove #(= (first %) (first linea)) (first amb))]
     (assoc amb 0 (sort-by first (concat lineas-amb-filtradas [linea])))))
 
+(defn expandir-aux [n palabra]
+  (mapcat
+    (fn [sublist]
+      (if (= (first sublist) palabra)
+        (map (fn [x] (list palabra x)) (remove #(= % (symbol ",")) (rest sublist)))
+        [sublist]))
+    n))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; expandir-nexts: recibe una lista de sentencias y la devuelve con
 ; las sentencias NEXT compuestas expresadas como sentencias NEXT
@@ -730,12 +740,7 @@
 ; ((PRINT 1) (NEXT A) (NEXT B))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn expandir-nexts [n]
-  (mapcat
-    (fn [sublist]
-      (if (= (first sublist) 'NEXT)
-        (map (fn [x] (list 'NEXT x)) (remove #(= % (symbol ",")) (rest sublist)))
-        [sublist]))
-    n))
+  (expandir-aux n 'NEXT))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; dar-error: recibe un error (codigo o mensaje) y el puntero de
@@ -881,7 +886,10 @@
 ; ("HOLA" "MUNDO" 10 20)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn extraer-data [prg]
-  )
+  (let [prg-filtrado-rem (map (fn [x] (take-while #(not= (first %) 'REM) (rest x))) prg)]
+    (let [function-list (map #(filter (fn [z] (if (= (first z) 'DATA) true false)) %) prg-filtrado-rem)]
+      (map #(if (integer? (second %)) (second %) (str (second %))) (mapcat (fn [c] (expandir-aux (filter #(= 'DATA (first %)) c) 'DATA)) function-list))
+    )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ejecutar-asignacion: recibe una asignacion y un ambiente, y

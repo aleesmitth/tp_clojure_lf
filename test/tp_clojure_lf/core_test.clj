@@ -331,3 +331,30 @@
 (deftest test-dar-error-4
   (testing "funcion dar-error ?ERROR DISK FULL en 100 3"
     (is (= (dar-error "?ERROR DISK FULL" [100 3]) "?ERROR DISK FULL IN 100nil"))))
+
+;;
+;; Pruebas para extraer-data
+;;
+(deftest test-extraer-data-vacio
+  (testing "extraer-data con datos vacíos"
+    (is (= (extraer-data '(()))))))
+
+(deftest test-extraer-data-mixto
+  (testing "extraer-data con datos mixtos"
+    (is (= (extraer-data (list '(10 (PRINT X) (REM ESTE NO) (DATA 30)) '(20 (DATA HOLA)) (list 100 (list 'DATA 'MUNDO (symbol ",") 10 (symbol ",") 20))))
+           '("HOLA" "MUNDO" 10 20)))))
+
+(deftest test-extraer-data-mixto-2
+  (testing "extraer-data con datos mixtos"
+    (is (= (extraer-data (list '(10 (PRINT X) (DATA 10) (REM ESTE NO) (DATA 30)) '(20 (DATA HOLA)) (list 100 (list 'DATA 'MUNDO (symbol ",") 10 (symbol ",") 20))))
+           '(10 "HOLA" "MUNDO" 10 20)))))
+
+(deftest test-extraer-data-mixto-3
+  (testing "extraer-data con datos mixtos"
+    (is (= (extraer-data (list '(10 (PRINT X) (DATA 10) (REM ESTE NO) (DATA 30)) '(20 (DATA HOLA) (REM) (DATA ESTE) (DATA TAMPOCO)) (list 100 (list 'DATA 'MUNDO (symbol ",") 10 (symbol ",") 20))))
+           '(10 "HOLA" "MUNDO" 10 20)))))
+
+(deftest test-extraer-data-sin-datos
+  (testing "extraer-data sin datos"
+    (is (= (extraer-data (list '(10 (PRINT X)) '(20 (PRINT Y))))
+           '()))))
