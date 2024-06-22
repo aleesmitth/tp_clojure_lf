@@ -46,7 +46,7 @@
 (declare extraer-data)                    ; IMPLEMENTAR [OK]
 (declare ejecutar-asignacion)             ; IMPLEMENTAR [OK]
 (declare preprocesar-expresion)           ; IMPLEMENTAR [OK]
-(declare desambiguar)                     ; IMPLEMENTAR
+(declare desambiguar)                     ; IMPLEMENTAR [OK]
 (declare precedencia)                     ; IMPLEMENTAR [OK]
 (declare aridad)                          ; IMPLEMENTAR [OK]
 (declare eliminar-cero-decimal)           ; IMPLEMENTAR [OK]
@@ -953,7 +953,7 @@
 ; (MID3$ ( 1 , -u 2 + K , 3 ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn desambiguar [expr]
-  )
+  (desambiguar-mas-menos (desambiguar-mid (desambiguar-comas expr))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; precedencia: recibe un token y retorna el valor de su

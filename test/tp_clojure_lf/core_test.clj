@@ -460,3 +460,26 @@
   (testing "Testing ejecutar-asignacion function with X$ = X$ + \" WORLD\" and environment with X$ = \"HELLO\""
     (is (= ['((10 (PRINT X))) [10 1] [] [] [] 0 {'X$ "HELLO WORLD"}]
            (ejecutar-asignacion '(X$ = X$ + " WORLD") ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X$ "HELLO"}])))))
+
+;;
+;; Pruebas para desambiguar
+;;
+(deftest test-desambiguar-1
+  (testing "desambiguar function with unary minus"
+    (is (= (str (desambiguar (list '- 2 '* (symbol "(") '- 3 '+ 5 '- (symbol "(") '+ 2 '/ 7 (symbol ")") (symbol ")")))
+                (str '(-u 2 * ( -u 3 + 5 - ( 2 / 7 ) ))))))))
+
+(deftest test-desambiguar-2
+  (testing "desambiguar function with MID$"
+    (is (= (str (desambiguar (list 'MID$ (symbol "(") 1 (symbol ",") 2 (symbol ")")))
+                (str '(MID$ ( 1 , 2 ))))))))
+
+(deftest test-desambiguar-3
+  (testing "desambiguar function with MID3$"
+    (is (= (str (desambiguar (list 'MID$ (symbol "(") 1 (symbol ",") 2 (symbol ",") 3 (symbol ")")))
+                (str '(MID3$ ( 1 , 2 , 3 ))))))))
+
+(deftest test-desambiguar-4
+  (testing "desambiguar function with MID3$ and unary minus"
+    (is (= (str (desambiguar (list 'MID$ (symbol "(") 1 (symbol ",") '- 2 '+ 'K (symbol ",") 3 (symbol ")")))
+                (str '(MID3$ ( 1 , -u 2 + K , 3 ))))))))
