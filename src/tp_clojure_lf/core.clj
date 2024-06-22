@@ -701,12 +701,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn anular-invalidos [sentencia]
   (map #(if (or
+              (= % \.)
+              (= (str %) ".")
               (not (symbol? %))
               (palabra-reservada? %)
               (operador? %)
               (variable-float? %)
               (variable-integer? %)
-              (variable-string? %)) % nil) sentencia))
+              (variable-string? %)
+              (> (count (name %)) 2)) % nil) sentencia))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; cargar-linea: recibe una linea de codigo y un ambiente y retorna
@@ -764,13 +767,12 @@
 ; ?ERROR DISK FULL IN 100nil
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn dar-error [cod prog-ptrs]
-  (str (if (integer? cod)
-         (buscar-mensaje cod)
-         cod)
-       (if (not= (first prog-ptrs) :ejecucion-inmediata)
-         (str " IN " (first prog-ptrs)))
-       "nil")
-  )
+  (let [error-message (str (if (integer? cod)
+                             (buscar-mensaje cod)
+                             cod)
+                           (if (not= (first prog-ptrs) :ejecucion-inmediata)
+                             (str " IN " (first prog-ptrs))))]
+    (println error-message)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; variable-float?: predicado para determinar si un identificador
@@ -882,7 +884,9 @@
 (defn continuar-linea [amb]
   (let [gosub-stack (first (second (rest amb)))]
     (if (empty? gosub-stack)
-      [nil amb]
+      (do
+        (println "?RETURN WITHOUT GOSUB ERROR")
+        [nil amb])
       (let [updated-gosub-stack (update gosub-stack 1 dec)]  ; decrease the second value of gosub-stack by 1
         (let [amb-with-updated-gosub-stack (assoc amb 1 updated-gosub-stack)]  ; put it in the second position of amb
           [:omitir-restante (assoc amb-with-updated-gosub-stack 2 [])])))))  ; empty out the third position of amb

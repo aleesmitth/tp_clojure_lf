@@ -301,6 +301,8 @@
 ;;
 (deftest test-anular-invalidos
   (testing "funcion anular-invalidos"
+    (is (= (anular-invalidos '(LOAD NAME . BAS))
+           '(LOAD NAME . BAS)))
     (is (= (anular-invalidos '(IF X & * Y < 12 THEN LET ! X = 0))
            '(IF X nil * Y < 12 THEN LET nil X = 0)))
     (is (= (anular-invalidos '(PRINT X + Y))
@@ -318,19 +320,19 @@
 ;;
 (deftest test-dar-error-1
   (testing "funcion dar-error 16"
-    (is (= (dar-error 16 [:ejecucion-inmediata 4]) "?SYNTAX ERRORnil"))))
+    (is (= (clojure.string/trim-newline (str (with-out-str (dar-error 16 [:ejecucion-inmediata 4])))) "?SYNTAX ERROR"))))
 
 (deftest test-dar-error-2
   (testing "funcion dar-error ?ERROR DISK FULL"
-    (is (= (dar-error "?ERROR DISK FULL" [:ejecucion-inmediata 4]) "?ERROR DISK FULLnil"))))
+    (is (= (clojure.string/trim-newline (str (with-out-str (dar-error "?ERROR DISK FULL" [:ejecucion-inmediata 4])))) "?ERROR DISK FULL"))))
 
 (deftest test-dar-error-3
   (testing "funcion dar-error 16 en 100 3"
-    (is (= (dar-error 16 [100 3]) "?SYNTAX ERROR IN 100nil"))))
+    (is (= (clojure.string/trim-newline (str (with-out-str (dar-error 16 [100 3])))) "?SYNTAX ERROR IN 100"))))
 
 (deftest test-dar-error-4
   (testing "funcion dar-error ?ERROR DISK FULL en 100 3"
-    (is (= (dar-error "?ERROR DISK FULL" [100 3]) "?ERROR DISK FULL IN 100nil"))))
+    (is (= (clojure.string/trim-newline (str (with-out-str (dar-error "?ERROR DISK FULL" [100 3])))) "?ERROR DISK FULL IN 100"))))
 
 ;;
 ;; Pruebas para extraer-data
