@@ -41,7 +41,7 @@
 (declare variable-integer?)               ; IMPLEMENTAR [OK]
 (declare variable-string?)                ; IMPLEMENTAR [OK]
 (declare contar-sentencias)               ; IMPLEMENTAR [OK]
-(declare buscar-lineas-restantes)         ; IMPLEMENTAR
+(declare buscar-lineas-restantes)         ; IMPLEMENTAR [OK]
 (declare continuar-linea)                 ; IMPLEMENTAR
 (declare extraer-data)                    ; IMPLEMENTAR [OK]
 (declare ejecutar-asignacion)             ; IMPLEMENTAR [OK]
@@ -863,7 +863,9 @@
 (defn buscar-lineas-restantes
   ([amb] (buscar-lineas-restantes (amb 1) (amb 0)))
   ([act prg]
-   )
+   (if (or (empty? prg) (empty? act) (not (number? (first act)))) nil (let [valid-prg (drop-while #(not= (first %) (first act)) prg)]
+     (if (empty? valid-prg) nil (concat [(concat [(first (first valid-prg))] (take-last (last act) (expandir-nexts (rest (first valid-prg)))))] (rest valid-prg)))
+   )))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -971,6 +973,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn precedencia [token]
   (cond
+    (= token \,) 0
     (= token 'OR) 1
     (= token 'AND) 2
     (or (= token '=) (= token '<>) (= token '<) (= token '>) (= token '<=) (= token '>=)) 4

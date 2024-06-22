@@ -483,3 +483,68 @@
   (testing "desambiguar function with MID3$ and unary minus"
     (is (= (str (desambiguar (list 'MID$ (symbol "(") 1 (symbol ",") '- 2 '+ 'K (symbol ",") 3 (symbol ")")))
                 (str '(MID3$ ( 1 , -u 2 + K , 3 ))))))))
+
+;;
+;; Pruebas para buscar-lineas-restantes
+;;
+(deftest test-buscar-lineas-restantes-1
+  (testing "buscar-lineas-restantes function with empty program"
+    (is (nil? (buscar-lineas-restantes [() [:ejecucion-inmediata 0] [] [] [] 0 {}])))))
+
+(deftest test-buscar-lineas-restantes-2
+  (testing "buscar-lineas-restantes function with one line program"
+    (is (nil? (buscar-lineas-restantes ['((PRINT X) (PRINT Y)) [:ejecucion-inmediata 2] [] [] [] 0 {}])))))
+
+(deftest test-buscar-lineas-restantes-3
+  (testing "buscar-lineas-restantes function with multiple lines program"
+    (is (= (str (buscar-lineas-restantes [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [10 2] [] [] [] 0 {}])
+                (str '((10 (PRINT X) (PRINT Y)) (15 (X = X + 1)) (20 (NEXT I , J)))))))))
+
+(deftest test-buscar-lineas-restantes-4
+  (testing "buscar-lineas-restantes function with multiple lines program and one statement executed"
+    (is (= (str (buscar-lineas-restantes [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [10 1] [] [] [] 0 {}])
+                (str '((10 (PRINT Y)) (15 (X = X + 1)) (20 (NEXT I , J)))))))))
+
+(deftest test-buscar-lineas-restantes-5
+  (testing "buscar-lineas-restantes function with multiple lines program and all statements executed"
+    (is (= (str (buscar-lineas-restantes [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [10 0] [] [] [] 0 {}])
+                (str '((10) (15 (X = X + 1)) (20 (NEXT I , J)))))))))
+
+(deftest test-buscar-lineas-restantes-6
+  (testing "buscar-lineas-restantes function with multiple lines program and one statement executed in the second line"
+    (is (= (str (buscar-lineas-restantes [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [15 1] [] [] [] 0 {}])
+                (str '((15 (X = X + 1)) (20 (NEXT I , J)))))))))
+
+(deftest test-buscar-lineas-restantes-7
+  (testing "buscar-lineas-restantes function with multiple lines program and all statements executed in the second line"
+    (is (= (str (buscar-lineas-restantes [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [15 0] [] [] [] 0 {}])
+                (str '((15) (20 (NEXT I , J)))))))))
+
+(deftest test-buscar-lineas-restantes-8
+  (testing "buscar-lineas-restantes function with multiple lines program and one statement executed in the third line"
+    (is (= (buscar-lineas-restantes [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [20 3] [] [] [] 0 {}])
+           '((20 (NEXT I) (NEXT J)))))))
+
+(deftest test-buscar-lineas-restantes-9
+  (testing "buscar-lineas-restantes function with multiple lines program and two statements executed in the third line"
+    (is (= (buscar-lineas-restantes [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [20 2] [] [] [] 0 {}])
+           '((20 (NEXT I) (NEXT J)))))))
+
+(deftest test-buscar-lineas-restantes-10
+  (testing "buscar-lineas-restantes function with multiple lines program and all but one statements executed in the third line"
+    (is (= (buscar-lineas-restantes [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [20 1] [] [] [] 0 {}])
+           '((20 (NEXT J)))))))
+
+(deftest test-buscar-lineas-restantes-11
+  (testing "buscar-lineas-restantes function with multiple lines program and all statements executed in the third line"
+    (is (= (buscar-lineas-restantes [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [20 0] [] [] [] 0 {}])
+           '((20))))))
+
+(deftest test-buscar-lineas-restantes-12
+  (testing "buscar-lineas-restantes function with multiple lines program and more than all statements executed in the third line"
+    (is (= (buscar-lineas-restantes [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [20 -1] [] [] [] 0 {}])
+           '((20))))))
+
+(deftest test-buscar-lineas-restantes-13
+  (testing "buscar-lineas-restantes function with multiple lines program and non-existent line"
+    (is (nil? (buscar-lineas-restantes [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [25 0] [] [] [] 0 {}])))))
