@@ -947,7 +947,7 @@
              (if-let [val (get vars item)] ; If the symbol is a variable in the environment
                val ; Replace it with its value
                (if (operador? item) item (if (variable-string? item) "" 0)))
-             :else (if (string? item) item 0)))
+             :else (if (string? item) item (if (number? item) item 0))))
          (anular-invalidos expr))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
