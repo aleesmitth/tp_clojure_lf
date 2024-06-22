@@ -42,7 +42,7 @@
 (declare variable-string?)                ; IMPLEMENTAR [OK]
 (declare contar-sentencias)               ; IMPLEMENTAR [OK]
 (declare buscar-lineas-restantes)         ; IMPLEMENTAR [OK]
-(declare continuar-linea)                 ; IMPLEMENTAR
+(declare continuar-linea)                 ; IMPLEMENTAR [OK]
 (declare extraer-data)                    ; IMPLEMENTAR [OK]
 (declare ejecutar-asignacion)             ; IMPLEMENTAR [OK]
 (declare preprocesar-expresion)           ; IMPLEMENTAR [OK]
@@ -880,7 +880,12 @@
 ; [:omitir-restante [((10 (PRINT X)) (15 (GOSUB 100) (X = X + 1)) (20 (NEXT I , J))) [15 1] [] [] [] 0 {}]]
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn continuar-linea [amb]
-  )
+  (let [gosub-stack (first (second (rest amb)))]
+    (if (empty? gosub-stack)
+      [nil amb]
+      (let [updated-gosub-stack (update gosub-stack 1 dec)]  ; decrease the second value of gosub-stack by 1
+        (let [amb-with-updated-gosub-stack (assoc amb 1 updated-gosub-stack)]  ; put it in the second position of amb
+          [:omitir-restante (assoc amb-with-updated-gosub-stack 2 [])])))))  ; empty out the third position of amb
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; extraer-data: recibe la representación intermedia de un programa

@@ -548,3 +548,16 @@
 (deftest test-buscar-lineas-restantes-13
   (testing "buscar-lineas-restantes function with multiple lines program and non-existent line"
     (is (nil? (buscar-lineas-restantes [(list '(10 (PRINT X) (PRINT Y)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [25 0] [] [] [] 0 {}])))))
+
+;;
+;; Pruebas para continuar-linea
+;;
+(deftest test-continuar-linea-case-1
+  (testing "Testing continuar-linea function - Case 1"
+    (let [amb1 [(list '(10 (PRINT X)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [20 3] [] [] [] 0 {}]]
+      (is (= (continuar-linea amb1) [nil [(list '(10 (PRINT X)) '(15 (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [20 3] [] [] [] 0 {}]])))))
+
+(deftest test-continuar-linea-case-2
+  (testing "Testing continuar-linea function - Case 2"
+    (let [amb2 [(list '(10 (PRINT X)) '(15 (GOSUB 100) (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [20 3] [[15 2]] [] [] 0 {}]]
+      (is (= (continuar-linea amb2) [:omitir-restante [(list '(10 (PRINT X)) '(15 (GOSUB 100) (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [15 1] [] [] [] 0 {}]])))))
