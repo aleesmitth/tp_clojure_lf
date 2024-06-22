@@ -426,3 +426,37 @@
   (testing "Testing preprocesar-expresion"
     (is (= (preprocesar-expresion '(X$ + " MUNDO" + Z$) ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X$ "HOLA"}]) '("HOLA" + " MUNDO" + "")))
     (is (= (preprocesar-expresion '(X + . / Y% * Z) ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 5 Y% 2}]) '(5 + 0 / 2 * 0)))))
+
+
+;;
+;; Pruebas para ejecutar-asignacion
+;;
+(deftest test-ejecutar-asignacion-1
+  (testing "Testing ejecutar-asignacion function with X = 5 and empty environment"
+    (is (= ['((10 (PRINT X))) [10 1] [] [] [] 0 {'X 5}]
+           (ejecutar-asignacion '(X = 5) ['((10 (PRINT X))) [10 1] [] [] [] 0 {}])))))
+
+(deftest test-ejecutar-asignacion-2
+  (testing "Testing ejecutar-asignacion function with X = 5 and environment with X = 2"
+    (is (= ['((10 (PRINT X))) [10 1] [] [] [] 0 {'X 5}]
+           (ejecutar-asignacion '(X = 5) ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 2}])))))
+
+(deftest test-ejecutar-asignacion-3
+  (testing "Testing ejecutar-asignacion function with X = X + 1 and environment with X = 2"
+    (is (= ['((10 (PRINT X))) [10 1] [] [] [] 0 {'X 3}]
+           (ejecutar-asignacion '(X = X + 1) ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 2}])))))
+
+(deftest test-ejecutar-asignacion-4
+  (testing "Testing ejecutar-asignacion function with X$ = X$ + \" MUNDO\" and environment with X$ = \"HOLA\""
+    (is (= ['((10 (PRINT X))) [10 1] [] [] [] 0 {'X$ "HOLA MUNDO"}]
+           (ejecutar-asignacion '(X$ = X$ + " MUNDO") ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X$ "HOLA"}])))))
+
+(deftest test-ejecutar-asignacion-unused-variable
+  (testing "Testing ejecutar-asignacion function with X = 5 and environment with X = 2 and unused variable Y"
+    (is (= ['((10 (PRINT X))) [10 1] [] [] [] 0 {'X 5 'Y 10}]
+           (ejecutar-asignacion '(X = 5) ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 2 Y 10}])))))
+
+(deftest test-ejecutar-asignacion-string-concatenation
+  (testing "Testing ejecutar-asignacion function with X$ = X$ + \" WORLD\" and environment with X$ = \"HELLO\""
+    (is (= ['((10 (PRINT X))) [10 1] [] [] [] 0 {'X$ "HELLO WORLD"}]
+           (ejecutar-asignacion '(X$ = X$ + " WORLD") ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X$ "HELLO"}])))))

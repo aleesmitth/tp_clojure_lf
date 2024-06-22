@@ -44,7 +44,7 @@
 (declare buscar-lineas-restantes)         ; IMPLEMENTAR
 (declare continuar-linea)                 ; IMPLEMENTAR
 (declare extraer-data)                    ; IMPLEMENTAR [OK]
-(declare ejecutar-asignacion)             ; IMPLEMENTAR
+(declare ejecutar-asignacion)             ; IMPLEMENTAR [OK]
 (declare preprocesar-expresion)           ; IMPLEMENTAR [OK]
 (declare desambiguar)                     ; IMPLEMENTAR
 (declare precedencia)                     ; IMPLEMENTAR [OK]
@@ -53,6 +53,7 @@
 (declare eliminar-cero-entero)            ; IMPLEMENTAR [OK]
 
 (declare expandir-aux)                    ; Funcion auxiliar
+(declare spy)                             ; Funcion auxiliar
 
 (defn -main
   "Alejandro Nicolás Smith 101730"
@@ -95,6 +96,9 @@
         (catch Exception e (dar-error (str "?ERROR " (clojure.string/trim (clojure.string/upper-case (get (Throwable->map e) :cause)))) (amb 1)) (driver-loop amb))))
   )
 
+(defn spy
+  ([x] (do (prn x) x))
+  ([msg x] (do (print msg) (print ": ") (prn x) x)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; string-a-tokens: analisis lexico y traduccion del codigo a la
 ; representacion intermedia (listas de listas de simbolos) que
@@ -905,7 +909,15 @@
 ; [((10 (PRINT X))) [10 1] [] [] [] 0 {X$ "HOLA MUNDO"}]
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn ejecutar-asignacion [sentencia amb]
-  )
+  (let [var (first sentencia) ; Extract the variable from the assignment
+        expr (rest (rest sentencia)) ; Extract the expression from the assignment
+        vars (last amb) ; Extract the variables from the environment
+        expr-with-vars (clojure.walk/postwalk-replace vars expr) ; Replace symbols in the expression with their values from the environment
+        operation (shunting-yard expr-with-vars) ; Convert the expression to Reverse Polish Not
+        operation-symbol-first (concat [(last operation)] (butlast operation))
+        val (if (<= (count sentencia) 3) 0 (apply aplicar (concat operation-symbol-first [0])))] ; Apply the operator to the operands
+    (let [updated-vars (assoc vars var (if (<= (count sentencia) 3) (first expr) val))] ; Update the variable in the environment
+      (assoc amb (dec (count amb)) updated-vars)))) ; Update the environment with the new variables
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; preprocesar-expresion: recibe una expresion y la retorna con
