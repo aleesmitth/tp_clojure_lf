@@ -645,6 +645,7 @@
          + (if (and (string? operando1) (string? operando2))
              (str operando1 operando2)
              (+ operando1 operando2))
+         (or < > >= <=) (operador operando1 operando2)
          / (if (= operando2 0) (dar-error 133 nro-linea) (/ operando1 operando2))  ; Division by zero error
          AND (let [op1 (+ 0 operando1), op2 (+ 0 operando2)] (if (and (not= op1 0) (not= op2 0)) 1 0))
          MID$ (if (< operando2 1)
@@ -689,7 +690,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn operador? [x]
   (if (or (= x "^") (= x (symbol "^"))) true
-                (let [operadores #{'+ '- '* '/ \^ '= '<> '< '<= '> '>=}
+                (let [operadores #{'+ '- '* '/ \^ '= '<> '< '<= '> '>= 'AND 'OR}
                       x-symbol (if (string? x) (symbol x) x)]
                   (contains? operadores x-symbol))))
 
@@ -704,6 +705,8 @@
               (= % \.)
               (= % \;)
               (= (str %) ";")
+              (= % \:)
+              (= (str %) ":")
               (= (str %) ".")
               (not (symbol? %))
               (palabra-reservada? %)
@@ -1012,6 +1015,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn aridad [token]
   (cond
+    (= token '-u) 1
     (= token 'MID3$) 3
     (or (= token 'MID$)
         (= token '*)
