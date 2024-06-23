@@ -611,6 +611,10 @@
       NEXT (if (<= (count (next sentencia)) 1)
              (retornar-al-for amb (fnext sentencia))
              (do (dar-error 16 (amb 1)) [nil amb]))  ; Syntax error
+      LET (let [resu (ejecutar-asignacion (rest sentencia) amb)]
+            (if (nil? resu)
+              [nil amb]
+              [:sin-errores resu]))
       END [:sin-errores amb]
       (if (= (second sentencia) '=)
         (let [resu (ejecutar-asignacion sentencia amb)]
