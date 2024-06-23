@@ -53,6 +53,7 @@
 (declare eliminar-cero-entero)            ; IMPLEMENTAR [OK]
 
 (declare expandir-aux)                    ; Funcion auxiliar
+(declare procesar-expresion)              ; Funcion auxiliar
 (declare spy)                             ; Funcion auxiliar
 
 (defn -main
@@ -472,6 +473,32 @@
     (catch Exception e (dar-error 16 nro-linea)))  ; Syntax error
   )
 
+(defn procesar-expresion
+  ([v]
+   (let [expresiones (v 0), amb (v 1)]
+     (cond
+       (empty? expresiones) (do (prn) (flush) :sin-errores)
+       (and (empty? (next expresiones)) (= (first expresiones) (list (symbol ";")))) (do (pr) (flush) :sin-errores)
+       (and (empty? (next expresiones)) (= (first expresiones) (list (symbol ",t")))) (do (printf "\t\t") (flush) :sin-errores)
+       (= (first expresiones) (list (symbol ";"))) (do (pr) (flush) (recur [(next expresiones) amb]))
+       (= (first expresiones) (list (symbol ",t"))) (do (printf "\t\t") (flush) (recur [(next expresiones) amb]))
+       :else (let [resu (eliminar-cero-entero (calcular-expresion (first expresiones) amb))]
+               ;(if (nil? resu)
+                 resu
+                 ;(do (print resu) (flush) (recur [(next expresiones) amb])))
+       ))))
+  ([lista-expr amb]
+   (let [nueva (cons (conj [] (first lista-expr)) (rest lista-expr)),
+         variable? #(or (variable-integer? %) (variable-float? %) (variable-string? %)),
+         funcion? #(and (> (aridad %) 0) (not (operador? %))),
+         interc (reduce #(if (and (or (number? (last %1)) (string? (last %1)) (variable? (last %1)) (= (symbol ")") (last %1)))
+                                  (or (number? %2) (string? %2) (variable? %2) (funcion? %2) (= (symbol "(") %2)))
+                           (conj (conj %1 (symbol ";")) %2) (conj %1 %2)) nueva),
+         ex (partition-by #(= % (symbol ",t")) (desambiguar-comas interc)),
+         expresiones (apply concat (map #(partition-by (fn [x] (= x (symbol ";"))) %) ex))]
+     (procesar-expresion [expresiones amb])))
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; imprimir: recibe una lista de expresiones (separadas o no
 ; mediante puntos y comas o comas) y un ambiente, y las muestra
@@ -611,8 +638,8 @@
       NEXT (if (<= (count (next sentencia)) 1)
              (retornar-al-for amb (fnext sentencia))
              (do (dar-error 16 (amb 1)) [nil amb]))  ; Syntax error
-      LET (let [resu (ejecutar-asignacion (rest sentencia) amb)]
-            (if (nil? resu)
+      LET (let [args (next sentencia), resu (ejecutar-asignacion (concat (take 2 args) [(procesar-expresion (next (next args)) amb)]) amb)]
+            (if (and (nil? resu) (some? args))
               [nil amb]
               [:sin-errores resu]))
       END [:sin-errores amb]
@@ -936,10 +963,10 @@
         expr (rest (rest sentencia)) ; Extract the expression from the assignment
         vars (last amb) ; Extract the variables from the environment
         expr-with-vars (clojure.walk/postwalk-replace vars expr) ; Replace symbols in the expression with their values from the environment
-        operation (shunting-yard expr-with-vars) ; Convert the expression to Reverse Polish Not
+        operation (shunting-yard expr-with-vars)
         operation-symbol-first (concat [(last operation)] (butlast operation))
-        val (if (<= (count sentencia) 3) 0 (apply aplicar (concat operation-symbol-first [0])))] ; Apply the operator to the operands
-    (let [updated-vars (assoc vars var (if (<= (count sentencia) 3) (first expr) val))] ; Update the variable in the environment
+        val-raw (if (<= (count sentencia) 3) 0 (apply aplicar (concat operation-symbol-first [0])))]
+    (let [updated-vars (assoc vars var (if (<= (count sentencia) 3) (read-string (first expr)) val-raw))] ; Update the variable in the environment
       (assoc amb (dec (count amb)) updated-vars)))) ; Update the environment with the new variables
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
