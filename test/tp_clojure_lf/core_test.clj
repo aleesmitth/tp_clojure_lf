@@ -563,3 +563,8 @@
   (testing "Testing continuar-linea function - Case 2"
     (let [amb2 [(list '(10 (PRINT X)) '(15 (GOSUB 100) (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [20 3] [[15 2]] [] [] 0 {}]]
       (is (= (continuar-linea amb2) [:omitir-restante [(list '(10 (PRINT X)) '(15 (GOSUB 100) (X = X + 1)) (list 20 (list 'NEXT 'I (symbol ",") 'J))) [15 1] [] [] [] 0 {}]])))))
+
+
+(deftest test-calcular-rpn
+  (testing "Testing calcular-rpn function"
+    (is (= 0 (calcular-rpn '(3 1 <) [:ejecucion-inmediata 0])))))
