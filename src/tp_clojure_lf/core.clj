@@ -702,6 +702,8 @@
 (defn anular-invalidos [sentencia]
   (map #(if (or
               (= % \.)
+              (= % \;)
+              (= (str %) ";")
               (= (str %) ".")
               (not (symbol? %))
               (palabra-reservada? %)
