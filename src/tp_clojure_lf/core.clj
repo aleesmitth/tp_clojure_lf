@@ -737,11 +737,13 @@
 (defn anular-invalidos [sentencia]
   (map #(if (or
               (= % \.)
+              (= % \,)
               (= % \;)
               (= (str %) ";")
               (= % \:)
               (= (str %) ":")
               (= (str %) ".")
+              (= (str %) ",")
               (not (symbol? %))
               (palabra-reservada? %)
               (operador? %)
@@ -1021,7 +1023,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn precedencia [token]
   (cond
-    (= token \,) 0
+    (or (= token \,) (= (str token) ",")) 0
     (= token 'OR) 1
     (= token 'AND) 2
     (or (= token '=) (= token '<>) (= token '<) (= token '>) (= token '<=) (= token '>=)) 4
