@@ -245,14 +245,14 @@
                    entradas (map #(let [entr (try (clojure.edn/read-string %) (catch Exception e (str %)))] (if (number? entr) entr (clojure.string/upper-case (str %)))) valores)]
                (if (empty? variables)
                  (do (dar-error 16 (amb 1)) [nil amb])  ; Syntax error
-                 (leer-con-enter (spy variables) entradas param-orig param-actualizados amb amb))))))))
+                 (leer-con-enter variables entradas param-orig param-actualizados amb amb))))))))
   ([variables entradas param-orig param-actualizados amb-orig amb-actualizado]
    (cond
      (and (empty? variables) (empty? entradas)) [:sin-errores amb-actualizado]
      (and (empty? variables) (not (empty? entradas))) (do (println "?EXTRA IGNORED") (flush) [:sin-errores amb-actualizado])
      (and (not (empty? variables)) (empty? entradas)) (leer-con-enter param-orig (concat (list "?? " (symbol ";")) variables) amb-actualizado)
      (and (not (variable-string? (first variables))) (string? (first entradas))) (do (println "?REENTER") (flush) (leer-con-enter param-orig param-orig amb-orig))
-     :else (let [res (spy (ejecutar-asignacion (list (first variables) '= (if (variable-string? (first variables)) (str (first entradas)) (first entradas))) amb-actualizado))]
+     :else (let [res (ejecutar-asignacion (list (first variables) '= (if (variable-string? (first variables)) (str (first entradas)) (first entradas))) amb-actualizado)]
              (if (nil? res)
                [nil amb-actualizado]
                (if (or (= (count (next variables)) 1)
@@ -961,7 +961,6 @@
 ; [((10 (PRINT X))) [10 1] [] [] [] 0 {X$ "HOLA MUNDO"}]
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn ejecutar-asignacion [sentencia amb]
-  (println (concat (map #(type %) sentencia)))
   (let [var (first sentencia) ; Extract the variable from the assignment
         expr (rest (rest sentencia)) ; Extract the expression from the assignment
         vars (last amb) ; Extract the variables from the environment
