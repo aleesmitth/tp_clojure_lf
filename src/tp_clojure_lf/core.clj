@@ -55,6 +55,7 @@
 (declare expandir-aux)                    ; Funcion auxiliar
 (declare procesar-expresion)              ; Funcion auxiliar
 (declare spy)                             ; Funcion auxiliar
+(declare valor-a-tipo-variable)           ; Funcion auxiliar
 
 (defn -main
   "Alejandro Nicolás Smith 101730"
@@ -949,6 +950,17 @@
       (map #(if (integer? (second %)) (second %) (str (second %))) (mapcat (fn [c] (expandir-aux (filter #(= 'DATA (first %)) c) 'DATA)) function-list))
     )))
 
+(defn valor-a-tipo-variable [var val]
+  (cond
+    (and (variable-float? var) (integer? val)) (float val)
+    (and (variable-float? var) (string? val)) (Float/parseFloat val)
+    (variable-string? var) (str val)
+    (and (variable-integer? var) (float? val)) (int val)
+    (and (variable-integer? var) (string? val)) (Integer/parseInt val)
+    :else val
+    )
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ejecutar-asignacion: recibe una asignacion y un ambiente, y
 ; retorna el ambiente actualizado al efectuar la asignacion, por
@@ -970,7 +982,7 @@
         operation (shunting-yard expr-with-vars)
         operation-symbol-first (concat [(last operation)] (butlast operation))
         val-raw (if (<= (count sentencia) 3) 0 (apply aplicar (concat operation-symbol-first [0])))]
-    (let [updated-vars (assoc vars var (if (<= (count sentencia) 3) (if (number? (first expr)) (first expr) (read-string (first expr))) val-raw))] ; Update the variable in the environment
+    (let [updated-vars (assoc vars var (if (<= (count sentencia) 3) (valor-a-tipo-variable var (first expr)) val-raw))] ; Update the variable in the environment
       (assoc amb (dec (count amb)) updated-vars)))) ; Update the environment with the new variables
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

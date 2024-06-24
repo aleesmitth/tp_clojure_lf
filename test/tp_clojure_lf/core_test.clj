@@ -568,3 +568,24 @@
 (deftest test-calcular-rpn
   (testing "Testing calcular-rpn function"
     (is (= 0 (calcular-rpn '(3 1 <) [:ejecucion-inmediata 0])))))
+
+(deftest test-valor-a-tipo-variable
+  (testing "Convert integer to float"
+    (is (= (float 42.0) (valor-a-tipo-variable "X" 42))))
+
+  (testing "Convert string to float"
+    (is (= (float 3.14) (valor-a-tipo-variable "X" "3.14"))))
+
+  (testing "Convert value to string"
+    (is (= "42" (valor-a-tipo-variable "X$" 42)))
+    (is (= "3.14" (valor-a-tipo-variable "X$" (float 3.14)))))
+
+  (testing "Convert float to integer"
+    (is (= 42 (valor-a-tipo-variable "X%" (float 42.0)))))
+
+  (testing "Convert string to integer"
+    (is (= 42 (valor-a-tipo-variable "X%" "42"))))
+
+  (testing "Default case"
+    (is (= 42 (valor-a-tipo-variable "unknown" 42)))
+    (is (= "hello" (valor-a-tipo-variable "unknown" "hello")))))
