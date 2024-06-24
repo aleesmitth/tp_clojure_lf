@@ -372,7 +372,7 @@
 ; 7
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn calcular-expresion [expr amb]
-  (calcular-rpn (shunting-yard (desambiguar (preprocesar-expresion expr amb))) (amb 1))
+  (calcular-rpn (spy "shunting" (shunting-yard (desambiguar (preprocesar-expresion expr amb)))) (amb 1))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -449,6 +449,8 @@
 ; linea indicada
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn calcular-rpn [tokens nro-linea]
+  (println "asd")
+  (println (str "tokens" tokens))
   (try
     (let [resu-redu
           (reduce
@@ -563,6 +565,7 @@
 ; actualizado
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn evaluar [sentencia amb]
+  (println (str "evaluar: " sentencia amb))
   (if (or (contains? (set sentencia) nil) (and (palabra-reservada? (first sentencia)) (= (second sentencia) '=)))
     (do (dar-error 16 (amb 1)) [nil amb])  ; Syntax error
     (case (first sentencia)
@@ -639,13 +642,13 @@
       NEXT (if (<= (count (next sentencia)) 1)
              (retornar-al-for amb (fnext sentencia))
              (do (dar-error 16 (amb 1)) [nil amb]))  ; Syntax error
-      LET (let [args (next sentencia), resu (ejecutar-asignacion (concat (take 2 args) [(procesar-expresion (next (next args)) amb)]) amb)]
+      LET (let [args (next sentencia), resu (ejecutar-asignacion (spy "sentencia 2"(concat (take 2 args) [(procesar-expresion (next (next args)) amb)])) amb)]
             (if (and (nil? resu) (some? args))
               [nil amb]
               [:sin-errores resu]))
       END [:sin-errores amb]
       (if (= (second sentencia) '=)
-        (let [resu (ejecutar-asignacion sentencia amb)]
+        (let [resu (ejecutar-asignacion (spy "sentencia" sentencia) amb)]
           (if (nil? resu)
             [nil amb]
             [:sin-errores resu]))
@@ -659,6 +662,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn aplicar
   ([operador operando nro-linea]
+   (println (str "aplicar 3: " operador operando nro-linea))
    (if (nil? operando)
      (dar-error 16 nro-linea)  ; Syntax error
      (case operador
@@ -667,6 +671,7 @@
        STR$ (if (not (number? operando)) (dar-error 163 nro-linea) (eliminar-cero-entero operando)) ; Type mismatch error
        CHR$ (if (or (< operando 0) (> operando 255)) (dar-error 53 nro-linea) (str (char operando)))))) ; Illegal quantity error
   ([operador operando1 operando2 nro-linea]
+   (println (str "aplicar 4: " operador operando1 operando2 nro-linea))
    (if (or (nil? operando1) (nil? operando2))
      (dar-error 16 nro-linea)  ; Syntax error
      (if (= operador (symbol "^"))
@@ -689,6 +694,7 @@
                 (dar-error 53 nro-linea)  ; Illegal quantity error
                 (let [ini (dec operando2)] (if (>= ini (count operando1)) "" (subs operando1 ini))))))))
   ([operador operando1 operando2 operando3 nro-linea]
+   (println (str "aplicar 5: " operador operando1 operando2 operando3 nro-linea))
    (if (or (nil? operando1) (nil? operando2) (nil? operando3)) (dar-error 16 nro-linea)  ; Syntax error
                                                                (case operador
                                                                  MID3$ (let [tam (count operando1), ini (dec operando2), fin (+ (dec operando2) operando3)]
@@ -727,7 +733,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn operador? [x]
   (if (or (= x "^") (= x (symbol "^"))) true
-                (let [operadores #{'+ '- '* '/ \^ '= '<> '< '<= '> '>= 'AND 'OR}
+                (let [operadores #{'+ '- '* '/ \^ '= '<> '< '<= '> '>= 'AND 'OR 'LEN 'INT 'STR$ 'CHR$ '-u}
                       x-symbol (if (string? x) (symbol x) x)]
                   (contains? operadores x-symbol))))
 
@@ -743,6 +749,10 @@
               (= % \,)
               (= % \;)
               (= (str %) ";")
+              (= % \()
+              (= (str %) "(")
+              (= % \))
+              (= (str %) ")")
               (= % \:)
               (= (str %) ":")
               (= (str %) ".")
@@ -952,11 +962,11 @@
 
 (defn valor-a-tipo-variable [var val]
   (cond
-    (and (variable-float? var) (integer? val)) (float val)
-    (and (variable-float? var) (string? val)) (Float/parseFloat val)
+    (and (variable-float? var) (integer? val)) (eliminar-cero-decimal (float val))
+    (and (variable-float? var) (string? val)) (eliminar-cero-decimal (Float/parseFloat val))
     (variable-string? var) (str val)
-    (and (variable-integer? var) (float? val)) (int val)
-    (and (variable-integer? var) (string? val)) (Integer/parseInt val)
+    (and (variable-integer? var) (float? val)) (eliminar-cero-entero (int val))
+    (and (variable-integer? var) (string? val)) (eliminar-cero-entero (Integer/parseInt val))
     :else val
     )
   )
@@ -975,6 +985,8 @@
 ; [((10 (PRINT X))) [10 1] [] [] [] 0 {X$ "HOLA MUNDO"}]
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn ejecutar-asignacion [sentencia amb]
+  (println "asd")
+  (println (str "ejecutar-asignacion: " sentencia))
   (let [var (first sentencia) ; Extract the variable from the assignment
         expr (rest (rest sentencia)) ; Extract the expression from the assignment
         vars (last amb) ; Extract the variables from the environment
@@ -1038,7 +1050,7 @@
 (defn precedencia [token]
   (cond
     (or (= token \,) (= (str token) ",")) 0
-    (= token 'OR) 1
+    (or (= token 'OR) (= token 'LEN) (= token 'STR$) (= token 'CHR$) (= token 'INT)) 1
     (= token 'AND) 2
     (or (= token '=) (= token '<>) (= token '<) (= token '>) (= token '<=) (= token '>=)) 4
     (or (= token '+) (= token '-)) 5
@@ -1145,9 +1157,9 @@
   (let [str-s (str s)]
     (cond
       (nil? s) nil
-      (not (number? s)) str-s
+      (not (number? s)) s
       (and (<= -1 s 1) (not (integer? s))) (if (neg? s) (str "-" (subs str-s 2)) (subs str-s 1))
-      :else str-s)))
+      :else s)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Despues de cargarse el archivo, debe mostrarse el valor true

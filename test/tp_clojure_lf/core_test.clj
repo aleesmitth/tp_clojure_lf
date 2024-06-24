@@ -163,35 +163,35 @@
 
 (deftest test-eliminar-cero-entero-con-simbolo
   (testing "Prueba eliminar-cero-entero con un símbolo"
-    (is (= (eliminar-cero-entero 'A) "A"))))
+    (is (= (eliminar-cero-entero 'A) 'A))))
 
 (deftest test-eliminar-cero-entero-con-cero
   (testing "Prueba eliminar-cero-entero con cero"
-    (is (= (eliminar-cero-entero 0) "0"))))
+    (is (= (eliminar-cero-entero 0) 0))))
 
 (deftest test-eliminar-cero-entero-con-multiples-ceros
   (testing "Prueba eliminar-cero-entero con multiples ceros"
-    (is (= (eliminar-cero-entero 000) "0"))))
+    (is (= (eliminar-cero-entero 000) 0))))
 
 (deftest test-eliminar-cero-entero-con-decimal
   (testing "Prueba eliminar-cero-entero con un número decimal"
-    (is (= (eliminar-cero-entero 1.5) "1.5"))))
+    (is (= (eliminar-cero-entero 1.5) 1.5))))
 
 (deftest test-eliminar-cero-entero-con-entero
   (testing "Prueba eliminar-cero-entero con un número entero"
-    (is (= (eliminar-cero-entero 1) "1"))))
+    (is (= (eliminar-cero-entero 1) 1))))
 
 (deftest test-eliminar-cero-entero-con-entero-con-cero-adelante
   (testing "Prueba eliminar-cero-entero con un número entero con cero adelante"
-    (is (= (eliminar-cero-entero 01) "1"))))
+    (is (= (eliminar-cero-entero 01) 1))))
 
 (deftest test-eliminar-cero-entero-con-negativo
   (testing "Prueba eliminar-cero-entero con un número negativo"
-    (is (= (eliminar-cero-entero -1) "-1"))))
+    (is (= (eliminar-cero-entero -1) -1))))
 
 (deftest test-eliminar-cero-entero-con-negativo-decimal
   (testing "Prueba eliminar-cero-entero con un número decimal negativo"
-    (is (= (eliminar-cero-entero -1.5) "-1.5"))))
+    (is (= (eliminar-cero-entero -1.5) -1.5))))
 
 (deftest test-eliminar-cero-entero-con-decimal-menor-uno
   (testing "Prueba eliminar-cero-entero con un número decimal menor a uno"
@@ -569,19 +569,23 @@
   (testing "Testing calcular-rpn function"
     (is (= 0 (calcular-rpn '(3 1 <) [:ejecucion-inmediata 0])))))
 
+(deftest test-calcular-exp
+  (testing "Testing calcular-expresion LEN"
+    (is (= 3 (calcular-expresion '(LEN "ASD") ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 2}])))))
+
 (deftest test-valor-a-tipo-variable
   (testing "Convert integer to float"
-    (is (= (float 42.0) (valor-a-tipo-variable "X" 42))))
+    (is (= 42 (valor-a-tipo-variable "X" 42))))
 
   (testing "Convert string to float"
     (is (= (float 3.14) (valor-a-tipo-variable "X" "3.14"))))
 
   (testing "Convert value to string"
     (is (= "42" (valor-a-tipo-variable "X$" 42)))
-    (is (= "3.14" (valor-a-tipo-variable "X$" (float 3.14)))))
+    (is (= "3.14" (valor-a-tipo-variable "X$" 3.14))))
 
   (testing "Convert float to integer"
-    (is (= 42 (valor-a-tipo-variable "X%" (float 42.0)))))
+    (is (= 42 (valor-a-tipo-variable "X%" 42.0))))
 
   (testing "Convert string to integer"
     (is (= 42 (valor-a-tipo-variable "X%" "42"))))
