@@ -372,7 +372,7 @@
 ; 7
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn calcular-expresion [expr amb]
-  (calcular-rpn (spy "shunting" (shunting-yard (desambiguar (preprocesar-expresion expr amb)))) (amb 1))
+  (calcular-rpn (shunting-yard (desambiguar (preprocesar-expresion expr amb))) (amb 1))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -449,8 +449,8 @@
 ; linea indicada
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn calcular-rpn [tokens nro-linea]
-  (println "asd")
-  (println (str "tokens" tokens))
+  ;(println "asd")
+  ;(println (str "tokens" tokens))
   (try
     (let [resu-redu
           (reduce
@@ -559,9 +559,9 @@
   (let [first-part (take-while #(not= (str %) "(") sentencia)
         last-part (reverse (take-while #(not= (str %) ")") (reverse sentencia)))
         function (reverse (drop-while #(not= (str %) ")") (reverse (drop-while #(not= (str %) "(") sentencia))))
-        function-no-parenthesis (if (and (= (str (first function)) "(") (= (str (last function)) ")")) (spy (butlast (rest function))) function)
+        function-no-parenthesis (if (and (= (str (first function)) "(") (= (str (last function)) ")"))  (butlast (rest function)) function)
         desambiguate-last-part (if (= first-part last-part) '() last-part)]
-    [(spy "f" first-part) (spy "s" function-no-parenthesis) (spy "t" desambiguate-last-part)]))
+    [first-part function-no-parenthesis desambiguate-last-part]))
 
 (defn resolver-subfunciones
   ([sentencia amb]
@@ -569,8 +569,8 @@
      (resolver-subfunciones (nth sentencia-parseada 0) (nth sentencia-parseada 1) (nth sentencia-parseada 2) amb)))
 
   ([primera-parte funcion ultima-parte amb]
-   (println "yep")
-   (println (str "funcion: " primera-parte funcion ultima-parte))
+   ;(println "yep")
+   ;(println (str "funcion: " primera-parte funcion ultima-parte))
    (if (empty? funcion)
      (concat primera-parte ultima-parte)
      (concat primera-parte [(calcular-expresion (resolver-subfunciones funcion amb) amb)] ultima-parte)
@@ -587,7 +587,7 @@
 ; actualizado
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn evaluar [sentencia-original amb]
-  (let [sentencia (spy "resuleto" (resolver-subfunciones sentencia-original amb))]
+  (let [sentencia (resolver-subfunciones sentencia-original amb)]
     ;(parsear-sentencia sentencia)
     (if (or (contains? (set sentencia) nil) (and (palabra-reservada? (first sentencia)) (= (second sentencia) '=)))
       (do (dar-error 16 (amb 1)) [nil amb])  ; Syntax error
@@ -631,7 +631,7 @@
                                                                 (cons 'GOTO (next resto-if))
                                                                 (next resto-if))
                                    :else (do (dar-error 16 (amb 1)) nil)),  ; Syntax error
-                 resu (calcular-expresion (spy "cond if" condicion-de-if) amb)]
+                 resu (calcular-expresion condicion-de-if amb)]
              (if (zero? resu)
                [:omitir-restante amb]
                (recur sentencia-de-if amb)))
@@ -653,11 +653,11 @@
                       (continuar-programa nuevo-amb)
                       [:omitir-restante nuevo-amb]))))
         RETURN (continuar-linea amb)
-        FOR (let [separados (partition-by #(contains? #{"TO" "STEP"} (str %)) (next sentencia))]
+        FOR (let [separados (spy (partition-by #(contains? #{"TO" "STEP"} (str %)) (next sentencia)))]
               (if (not (or (and (= (count separados) 3) (variable-float? (ffirst separados)) (= (nth separados 1) '(TO)))
                            (and (= (count separados) 5) (variable-float? (ffirst separados)) (= (nth separados 1) '(TO)) (= (nth separados 3) '(STEP)))))
                 (do (dar-error 16 (amb 1)) [nil amb])  ; Syntax error
-                (let [valor-final (calcular-expresion (nth separados 2) amb),
+                (let [valor-final (spy (calcular-expresion (spy (nth separados 2)) amb)),
                       valor-step (if (= (count separados) 5) (calcular-expresion (nth separados 4) amb) 1)]
                   (if (or (nil? valor-final) (nil? valor-step))
                     [nil amb]
@@ -665,13 +665,13 @@
         NEXT (if (<= (count (next sentencia)) 1)
                (retornar-al-for amb (fnext sentencia))
                (do (dar-error 16 (amb 1)) [nil amb]))  ; Syntax error
-        LET (let [args (next sentencia), resu (ejecutar-asignacion (spy "sentencia 2" (concat (take 2 args) [(procesar-expresion (next (next args)) amb)])) amb)]
+        LET (let [args (next sentencia), resu (ejecutar-asignacion (concat (take 2 args) [(procesar-expresion (next (next args)) amb)]) amb)]
               (if (and (nil? resu) (some? args))
                 [nil amb]
                 [:sin-errores resu]))
         END [:sin-errores amb]
         (if (= (second sentencia) '=)
-          (let [resu (ejecutar-asignacion (spy "sentencia" sentencia) amb)]
+          (let [resu (ejecutar-asignacion sentencia amb)]
             (if (nil? resu)
               [nil amb]
               [:sin-errores resu]))
@@ -686,17 +686,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn aplicar
   ([operador operando nro-linea]
-   (println (str "aplicar 3: " operador operando nro-linea))
+   ;(println (str "aplicar 3: " operador operando nro-linea))
    (if (nil? operando)
      (dar-error 16 nro-linea)  ; Syntax error
      (case operador
        -u (- operando)
        LEN (count operando)
        INT (if (not (number? operando)) (eliminar-cero-entero (Integer/parseInt operando)) operando)
+       ATN (if (not (number? operando)) (dar-error 163 nro-linea) (Math/atan operando))
+       SIN (if (not (number? operando)) (dar-error 163 nro-linea) (Math/sin operando))
        STR$ (if (not (number? operando)) (dar-error 163 nro-linea) (eliminar-cero-entero operando)) ; Type mismatch error
        CHR$ (if (or (< operando 0) (> operando 255)) (dar-error 53 nro-linea) (str (char operando)))))) ; Illegal quantity error
   ([operador operando1 operando2 nro-linea]
-   (println (str "aplicar 4: " operador operando1 operando2 nro-linea))
+   ;(println (str "aplicar 4: " operador operando1 operando2 nro-linea))
    (if (or (nil? operando1) (nil? operando2))
      (dar-error 16 nro-linea)  ; Syntax error
      (if (= operador (symbol "^"))
@@ -719,7 +721,7 @@
                 (dar-error 53 nro-linea)  ; Illegal quantity error
                 (let [ini (dec operando2)] (if (>= ini (count operando1)) "" (subs operando1 ini))))))))
   ([operador operando1 operando2 operando3 nro-linea]
-   (println (str "aplicar 5: " operador operando1 operando2 operando3 nro-linea))
+   ;(println (str "aplicar 5: " operador operando1 operando2 operando3 nro-linea))
    (if (or (nil? operando1) (nil? operando2) (nil? operando3)) (dar-error 16 nro-linea)  ; Syntax error
                                                                (case operador
                                                                  MID3$ (let [tam (count operando1), ini (dec operando2), fin (+ (dec operando2) operando3)]
@@ -758,7 +760,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn operador? [x]
   (if (or (= x "^") (= x (symbol "^"))) true
-                (let [operadores #{'+ '- '* '/ \^ '= '<> '< '<= '> '>= 'AND 'OR 'LEN 'INT 'STR$ 'CHR$ '-u}
+                (let [operadores #{'+ '- '* '/ \^ '= '<> '< '<= '> '>= 'AND 'OR 'LEN 'SIN 'ATN 'INT 'STR$ 'CHR$ '-u}
                       x-symbol (if (string? x) (symbol x) x)]
                   (contains? operadores x-symbol))))
 
@@ -1010,8 +1012,8 @@
 ; [((10 (PRINT X))) [10 1] [] [] [] 0 {X$ "HOLA MUNDO"}]
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn ejecutar-asignacion [sentencia amb]
-  (println "asd")
-  (println (str "ejecutar-asignacion: " sentencia))
+  ;(println "asd")
+  ;(println (str "ejecutar-asignacion: " sentencia))
   (let [var (first sentencia) ; Extract the variable from the assignment
         expr (rest (rest sentencia)) ; Extract the expression from the assignment
         vars (last amb) ; Extract the variables from the environment
@@ -1078,13 +1080,13 @@
     (or (= token \,) (= (str token) ",")) 0
     (= token 'OR) 1
     (= token 'AND) 2
-    (or (= token 'LEN) (= token 'STR$) (= token 'CHR$) (= token 'INT)) 3
     (or (= token '=) (= token '<>) (= (str token) "<>") (= token '<) (= token '>) (= token '<=) (= token '>=)) 4
     (or (= token '+) (= token '-)) 5
     (or (= token '*) (= token '/)) 6
-    (= token '-u) 7
-    (= token \^) 8
-    :else 9
+    (or (= token 'LEN) (= token 'STR$) (= token 'CHR$) (= token 'INT) (= token 'SIN) (= token 'ATN)) 7
+    (= token '-u) 8
+    (= token \^) 9
+    :else 10
     )
   )
 

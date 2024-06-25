@@ -579,7 +579,11 @@
 
 (deftest test-calcular-dexp
   (testing "Testing calcular-expresion LEN"
-    (is (= 3 (calcular-rpn '(1 2 < 1 <> OR 1 INT) ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 1}])))))
+    (is (= 3 (calcular-expresion '(X < 2 OR X <> INT(X)) ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 1}])))))
+
+(deftest test-calculadr-dexp
+  (testing "Testing calcular-expresion LEN"
+    (is (= 3 (calcular-expresion '(8 * ATN 1) ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 1}])))))
 
 (deftest test-valor-a-tipo-variable
   (testing "Convert integer to float"
