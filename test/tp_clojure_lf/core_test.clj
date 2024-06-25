@@ -577,6 +577,10 @@
   (testing "Testing calcular-expresion LEN"
     (is (= 3 (calcular-expresion '(LEN "ASD") ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 2}])))))
 
+(deftest test-calcular-dexp
+  (testing "Testing calcular-expresion LEN"
+    (is (= 3 (calcular-rpn '(1 2 < 1 <> OR 1 INT) ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 1}])))))
+
 (deftest test-valor-a-tipo-variable
   (testing "Convert integer to float"
     (is (= 42 (valor-a-tipo-variable "X" 42))))

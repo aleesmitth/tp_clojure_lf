@@ -631,7 +631,7 @@
                                                                 (cons 'GOTO (next resto-if))
                                                                 (next resto-if))
                                    :else (do (dar-error 16 (amb 1)) nil)),  ; Syntax error
-                 resu (calcular-expresion condicion-de-if amb)]
+                 resu (calcular-expresion (spy "cond if" condicion-de-if) amb)]
              (if (zero? resu)
                [:omitir-restante amb]
                (recur sentencia-de-if amb)))
@@ -692,6 +692,7 @@
      (case operador
        -u (- operando)
        LEN (count operando)
+       INT (if (not (number? operando)) (eliminar-cero-entero (Integer/parseInt operando)) operando)
        STR$ (if (not (number? operando)) (dar-error 163 nro-linea) (eliminar-cero-entero operando)) ; Type mismatch error
        CHR$ (if (or (< operando 0) (> operando 255)) (dar-error 53 nro-linea) (str (char operando)))))) ; Illegal quantity error
   ([operador operando1 operando2 nro-linea]
@@ -1075,9 +1076,10 @@
   (cond
     (or (= (str token) ")") (= (str token) "(")) -1
     (or (= token \,) (= (str token) ",")) 0
-    (or (= token 'OR) (= token 'LEN) (= token 'STR$) (= token 'CHR$) (= token 'INT)) 1
+    (= token 'OR) 1
     (= token 'AND) 2
-    (or (= token '=) (= token '<>) (= token '<) (= token '>) (= token '<=) (= token '>=)) 4
+    (or (= token 'LEN) (= token 'STR$) (= token 'CHR$) (= token 'INT)) 3
+    (or (= token '=) (= token '<>) (= (str token) "<>") (= token '<) (= token '>) (= token '<=) (= token '>=)) 4
     (or (= token '+) (= token '-)) 5
     (or (= token '*) (= token '/)) 6
     (= token '-u) 7
