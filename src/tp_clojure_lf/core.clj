@@ -555,6 +555,28 @@
        (recur (next lista-expr) paren (conj res nuevo)))))
   )
 
+(defn parsear-sentencia [sentencia]
+  (let [first-part (take-while #(not= (str %) "(") sentencia)
+        last-part (reverse (take-while #(not= (str %) ")") (reverse sentencia)))
+        function (reverse (drop-while #(not= (str %) ")") (reverse (drop-while #(not= (str %) "(") sentencia))))
+        function-no-parenthesis (if (and (= (str (first function)) "(") (= (str (last function)) ")")) (spy (butlast (rest function))) function)
+        desambiguate-last-part (if (= first-part last-part) '() last-part)]
+    [(spy "f" first-part) (spy "s" function-no-parenthesis) (spy "t" desambiguate-last-part)]))
+
+(defn resolver-subfunciones
+  ([sentencia amb]
+   (let [sentencia-parseada (parsear-sentencia sentencia)]
+     (resolver-subfunciones (nth sentencia-parseada 0) (nth sentencia-parseada 1) (nth sentencia-parseada 2) amb)))
+
+  ([primera-parte funcion ultima-parte amb]
+   (println "yep")
+   (println (str "funcion: " primera-parte funcion ultima-parte))
+   (if (empty? funcion)
+     (concat primera-parte ultima-parte)
+     (concat primera-parte [(calcular-expresion (resolver-subfunciones funcion amb) amb)] ultima-parte)
+     )
+   )
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; A PARTIR DE ESTE PUNTO HAY QUE COMPLETAR LAS FUNCIONES DADAS ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -564,95 +586,97 @@
 ; con un resultado (usado luego por evaluar-linea) y un ambiente
 ; actualizado
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn evaluar [sentencia amb]
-  (println (str "evaluar: " sentencia amb))
-  (if (or (contains? (set sentencia) nil) (and (palabra-reservada? (first sentencia)) (= (second sentencia) '=)))
-    (do (dar-error 16 (amb 1)) [nil amb])  ; Syntax error
-    (case (first sentencia)
-      PRINT (let [args (next sentencia), resu (imprimir args amb)]
+(defn evaluar [sentencia-original amb]
+  (let [sentencia (spy "resuleto" (resolver-subfunciones sentencia-original amb))]
+    ;(parsear-sentencia sentencia)
+    (if (or (contains? (set sentencia) nil) (and (palabra-reservada? (first sentencia)) (= (second sentencia) '=)))
+      (do (dar-error 16 (amb 1)) [nil amb])  ; Syntax error
+      (case (first sentencia)
+        PRINT (let [args (next sentencia), resu (imprimir args amb)]
+                (if (and (nil? resu) (some? args))
+                  [nil amb]
+                  [:sin-errores amb]))
+        LOAD (if (= (first (amb 1)) :ejecucion-inmediata)
+               (let [nuevo-amb (cargar-arch (apply str (next sentencia)) (amb 1))]
+                 (if (nil? nuevo-amb)
+                   [nil amb]
+                   [:sin-errores [nuevo-amb [:ejecucion-inmediata 0] [] [] [] 0 {}]]))  ; [(prog-mem)  [prog-ptrs]  [gosub-return-stack]  [for-next-stack]  [data-mem]  data-ptr  {var-mem}]
+               (do (dar-error 200 (amb 1)) [nil amb]))  ; Load within program error
+        SAVE (if (= (first (amb 1)) :ejecucion-inmediata)
+               (let [resu (grabar-arch (apply str (next sentencia)) amb)]
+                 (if (nil? resu)
+                   [nil amb]
+                   [:sin-errores amb]))
+               (do (dar-error 201 (amb 1)) [nil amb]))  ; Save within program error
+        REM [:omitir-restante amb]
+        NEW [:sin-errores ['() [:ejecucion-inmediata 0] [] [] [] 0 {}]]  ; [(prog-mem)  [prog-ptrs]  [gosub-return-stack]  [for-next-stack]  [data-mem]  data-ptr  {var-mem}]
+        RUN (cond
+              (empty? (amb 0)) [:sin-errores amb]  ; no hay programa
+              (= (count sentencia) 1) (ejecutar-programa (assoc amb 1 [(ffirst (amb 0)) (count (expandir-nexts (nfirst (amb 0))))]))  ; no hay argumentos
+              (= (count (next sentencia)) 1) (ejecutar-programa (assoc amb 1 [(fnext sentencia) (contar-sentencias (fnext sentencia) amb)]))  ; hay solo un argumento
+              :else (do (dar-error 16 (amb 1)) [nil amb]))  ; Syntax error
+        GOTO (let [num-linea (if (some? (second sentencia)) (second sentencia) 0)]
+               (if (not (contains? (into (hash-set) (map first (amb 0))) num-linea))
+                 (do (dar-error 90 (amb 1)) [nil amb])  ; Undef'd statement error
+                 (let [nuevo-amb (assoc amb 1 [num-linea (contar-sentencias num-linea amb)])]
+                   (if (= (first (amb 1)) :ejecucion-inmediata)
+                     (continuar-programa nuevo-amb)
+                     [:omitir-restante nuevo-amb]))))
+        IF (let [separados (split-with #(not (contains? #{"THEN" "GOTO"} (str %))) (next sentencia)),
+                 condicion-de-if (first separados),
+                 resto-if (second separados),
+                 sentencia-de-if (cond
+                                   (= (first resto-if) 'GOTO) resto-if
+                                   (= (first resto-if) 'THEN) (if (number? (second resto-if))
+                                                                (cons 'GOTO (next resto-if))
+                                                                (next resto-if))
+                                   :else (do (dar-error 16 (amb 1)) nil)),  ; Syntax error
+                 resu (calcular-expresion condicion-de-if amb)]
+             (if (zero? resu)
+               [:omitir-restante amb]
+               (recur sentencia-de-if amb)))
+        INPUT (leer-con-enter (next sentencia) amb)
+        ON (let [separados (split-with #(not (contains? #{"GOTO" "GOSUB"} (str %))) (next sentencia)),
+                 indice-de-on (calcular-expresion (first separados) amb),
+                 sentencia-de-on (first (second separados)),
+                 destino-de-on (seleccionar-destino-de-on (next (second separados)) indice-de-on amb)]
+             (cond
+               (nil? destino-de-on) [nil amb]
+               (= destino-de-on :omitir-restante) [:sin-errores amb]
+               :else (recur (list sentencia-de-on destino-de-on) amb)))
+        GOSUB (let [num-linea (if (some? (second sentencia)) (second sentencia) 0)]
+                (if (not (contains? (into (hash-set) (map first (amb 0))) num-linea))
+                  (do (dar-error 90 (amb 1)) [nil amb])  ; Undef'd statement error
+                  (let [pos-actual (amb 1),
+                        nuevo-amb (assoc (assoc amb 1 [num-linea (contar-sentencias num-linea amb)]) 2 (conj (amb 2) pos-actual))]
+                    (if (= (first (amb 1)) :ejecucion-inmediata)
+                      (continuar-programa nuevo-amb)
+                      [:omitir-restante nuevo-amb]))))
+        RETURN (continuar-linea amb)
+        FOR (let [separados (partition-by #(contains? #{"TO" "STEP"} (str %)) (next sentencia))]
+              (if (not (or (and (= (count separados) 3) (variable-float? (ffirst separados)) (= (nth separados 1) '(TO)))
+                           (and (= (count separados) 5) (variable-float? (ffirst separados)) (= (nth separados 1) '(TO)) (= (nth separados 3) '(STEP)))))
+                (do (dar-error 16 (amb 1)) [nil amb])  ; Syntax error
+                (let [valor-final (calcular-expresion (nth separados 2) amb),
+                      valor-step (if (= (count separados) 5) (calcular-expresion (nth separados 4) amb) 1)]
+                  (if (or (nil? valor-final) (nil? valor-step))
+                    [nil amb]
+                    (recur (first separados) (assoc amb 3 (conj (amb 3) [(ffirst separados) valor-final valor-step (amb 1)])))))))
+        NEXT (if (<= (count (next sentencia)) 1)
+               (retornar-al-for amb (fnext sentencia))
+               (do (dar-error 16 (amb 1)) [nil amb]))  ; Syntax error
+        LET (let [args (next sentencia), resu (ejecutar-asignacion (spy "sentencia 2" (concat (take 2 args) [(procesar-expresion (next (next args)) amb)])) amb)]
               (if (and (nil? resu) (some? args))
                 [nil amb]
-                [:sin-errores amb]))
-      LOAD (if (= (first (amb 1)) :ejecucion-inmediata)
-             (let [nuevo-amb (cargar-arch (apply str (next sentencia)) (amb 1))]
-               (if (nil? nuevo-amb)
-                 [nil amb]
-                 [:sin-errores [nuevo-amb [:ejecucion-inmediata 0] [] [] [] 0 {}]]))  ; [(prog-mem)  [prog-ptrs]  [gosub-return-stack]  [for-next-stack]  [data-mem]  data-ptr  {var-mem}]
-             (do (dar-error 200 (amb 1)) [nil amb]))  ; Load within program error
-      SAVE (if (= (first (amb 1)) :ejecucion-inmediata)
-             (let [resu (grabar-arch (apply str (next sentencia)) amb)]
-               (if (nil? resu)
-                 [nil amb]
-                 [:sin-errores amb]))
-             (do (dar-error 201 (amb 1)) [nil amb]))  ; Save within program error
-      REM [:omitir-restante amb]
-      NEW [:sin-errores ['() [:ejecucion-inmediata 0] [] [] [] 0 {}]]  ; [(prog-mem)  [prog-ptrs]  [gosub-return-stack]  [for-next-stack]  [data-mem]  data-ptr  {var-mem}]
-      RUN (cond
-            (empty? (amb 0)) [:sin-errores amb]  ; no hay programa
-            (= (count sentencia) 1) (ejecutar-programa (assoc amb 1 [(ffirst (amb 0)) (count (expandir-nexts (nfirst (amb 0))))]))  ; no hay argumentos
-            (= (count (next sentencia)) 1) (ejecutar-programa (assoc amb 1 [(fnext sentencia) (contar-sentencias (fnext sentencia) amb)]))  ; hay solo un argumento
-            :else (do (dar-error 16 (amb 1)) [nil amb]))  ; Syntax error
-      GOTO (let [num-linea (if (some? (second sentencia)) (second sentencia) 0)]
-             (if (not (contains? (into (hash-set) (map first (amb 0))) num-linea))
-               (do (dar-error 90 (amb 1)) [nil amb])  ; Undef'd statement error
-               (let [nuevo-amb (assoc amb 1 [num-linea (contar-sentencias num-linea amb)])]
-                 (if (= (first (amb 1)) :ejecucion-inmediata)
-                   (continuar-programa nuevo-amb)
-                   [:omitir-restante nuevo-amb]))))
-      IF (let [separados (split-with #(not (contains? #{"THEN" "GOTO"} (str %))) (next sentencia)),
-               condicion-de-if (first separados),
-               resto-if (second separados),
-               sentencia-de-if (cond
-                                 (= (first resto-if) 'GOTO) resto-if
-                                 (= (first resto-if) 'THEN) (if (number? (second resto-if))
-                                                              (cons 'GOTO (next resto-if))
-                                                              (next resto-if))
-                                 :else (do (dar-error 16 (amb 1)) nil)),  ; Syntax error
-               resu (calcular-expresion condicion-de-if amb)]
-           (if (zero? resu)
-             [:omitir-restante amb]
-             (recur sentencia-de-if amb)))
-      INPUT (leer-con-enter (next sentencia) amb)
-      ON (let [separados (split-with #(not (contains? #{"GOTO" "GOSUB"} (str %))) (next sentencia)),
-               indice-de-on (calcular-expresion (first separados) amb),
-               sentencia-de-on (first (second separados)),
-               destino-de-on (seleccionar-destino-de-on (next (second separados)) indice-de-on amb)]
-           (cond
-             (nil? destino-de-on) [nil amb]
-             (= destino-de-on :omitir-restante) [:sin-errores amb]
-             :else (recur (list sentencia-de-on destino-de-on) amb)))
-      GOSUB (let [num-linea (if (some? (second sentencia)) (second sentencia) 0)]
-              (if (not (contains? (into (hash-set) (map first (amb 0))) num-linea))
-                (do (dar-error 90 (amb 1)) [nil amb])  ; Undef'd statement error
-                (let [pos-actual (amb 1),
-                      nuevo-amb (assoc (assoc amb 1 [num-linea (contar-sentencias num-linea amb)]) 2 (conj (amb 2) pos-actual))]
-                  (if (= (first (amb 1)) :ejecucion-inmediata)
-                    (continuar-programa nuevo-amb)
-                    [:omitir-restante nuevo-amb]))))
-      RETURN (continuar-linea amb)
-      FOR (let [separados (partition-by #(contains? #{"TO" "STEP"} (str %)) (next sentencia))]
-            (if (not (or (and (= (count separados) 3) (variable-float? (ffirst separados)) (= (nth separados 1) '(TO)))
-                         (and (= (count separados) 5) (variable-float? (ffirst separados)) (= (nth separados 1) '(TO)) (= (nth separados 3) '(STEP)))))
-              (do (dar-error 16 (amb 1)) [nil amb])  ; Syntax error
-              (let [valor-final (calcular-expresion (nth separados 2) amb),
-                    valor-step (if (= (count separados) 5) (calcular-expresion (nth separados 4) amb) 1)]
-                (if (or (nil? valor-final) (nil? valor-step))
-                  [nil amb]
-                  (recur (first separados) (assoc amb 3 (conj (amb 3) [(ffirst separados) valor-final valor-step (amb 1)])))))))
-      NEXT (if (<= (count (next sentencia)) 1)
-             (retornar-al-for amb (fnext sentencia))
-             (do (dar-error 16 (amb 1)) [nil amb]))  ; Syntax error
-      LET (let [args (next sentencia), resu (ejecutar-asignacion (spy "sentencia 2"(concat (take 2 args) [(procesar-expresion (next (next args)) amb)])) amb)]
-            (if (and (nil? resu) (some? args))
+                [:sin-errores resu]))
+        END [:sin-errores amb]
+        (if (= (second sentencia) '=)
+          (let [resu (ejecutar-asignacion (spy "sentencia" sentencia) amb)]
+            (if (nil? resu)
               [nil amb]
               [:sin-errores resu]))
-      END [:sin-errores amb]
-      (if (= (second sentencia) '=)
-        (let [resu (ejecutar-asignacion (spy "sentencia" sentencia) amb)]
-          (if (nil? resu)
-            [nil amb]
-            [:sin-errores resu]))
-        (do (dar-error 16 (amb 1)) [nil amb]))))  ; Syntax error
+          (do (dar-error 16 (amb 1)) [nil amb]))))  ; Syntax error
+    )
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1049,6 +1073,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn precedencia [token]
   (cond
+    (or (= (str token) ")") (= (str token) "(")) -1
     (or (= token \,) (= (str token) ",")) 0
     (or (= token 'OR) (= token 'LEN) (= token 'STR$) (= token 'CHR$) (= token 'INT)) 1
     (= token 'AND) 2

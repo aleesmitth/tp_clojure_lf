@@ -569,6 +569,10 @@
   (testing "Testing calcular-rpn function"
     (is (= 0 (calcular-rpn '(3 1 <) [:ejecucion-inmediata 0])))))
 
+(deftest test-calcular-rpn-5
+  (testing "Testing calcular-rpn function"
+    (is (= 3 (calcular-rpn '("asd" LEN) 10)))))
+
 (deftest test-calcular-exp
   (testing "Testing calcular-expresion LEN"
     (is (= 3 (calcular-expresion '(LEN "ASD") ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 2}])))))
@@ -593,3 +597,20 @@
   (testing "Default case"
     (is (= 42 (valor-a-tipo-variable "unknown" 42)))
     (is (= "hello" (valor-a-tipo-variable "unknown" "hello")))))
+
+
+;(deftest test-parsear-sentencia
+;  (testing "Testing parsear-sentencia function"
+;    (is (= 0 (parsear-sentencia '(LEN "(" "A" + "(" "a" + "asd" ")" ")"))))))
+;
+;(deftest test-parsear-sentencia2
+;  (testing "Testing parsear-sentencia function"
+;    (is (= 0 (apply concat (parsear-sentencia '(PRINT LEN "(" "asd" ")")))))))
+;
+;(deftest test-parsear-sentencia2
+;  (testing "Testing parsear-sentencia function"
+;    (is (= 0 (resolver-subfunciones '(PRINT LEN "(" "abc" ")") ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 2}])))))
+;
+;(deftest test-parsear-sdtencia2
+;  (testing "Testing parsear-sentencia function"
+;    (is (= 0 (calcular-expresion '("asd") ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 2}])))))
