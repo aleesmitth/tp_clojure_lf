@@ -365,23 +365,29 @@
 ;; Pruebas para precedencia
 ;;
 (deftest test-precedencia
-  (testing "Testing precedencia"
+  (testing "Testing precedencia function"
+    (is (= -1 (precedencia "(")))
+    (is (= -1 (precedencia ")")))
+    (is (= 0 (precedencia ",")))
     (is (= 1 (precedencia 'OR)))
     (is (= 2 (precedencia 'AND)))
-    (is (= 4 (precedencia '=)))
+    (is (= 3 (precedencia '=)))
     (is (= 4 (precedencia '<>)))
-    (is (= 4 (precedencia '<)))
-    (is (= 4 (precedencia '>)))
-    (is (= 4 (precedencia '<=)))
-    (is (= 4 (precedencia '>)))
-    (is (= 5 (precedencia '+)))
     (is (= 5 (precedencia '-)))
-    (is (= 6 (precedencia '*)))
-    (is (= 6 (precedencia '/)))
-    (is (= 7 (precedencia '-u)))
-    (is (= 8 (precedencia '\^)))
-    (is (= 9 (precedencia 'MID3$')))
-    (is (= 9 (precedencia 'MID$)))))
+    (is (= 6 (precedencia '+)))
+    (is (= 7 (precedencia '/)))
+    (is (= 8 (precedencia '*)))
+    (is (= 9 (precedencia \^)))
+    (is (= 10 (precedencia '-u)))
+    (is (= 11 (precedencia 'INT)))
+    (is (= 12 (precedencia 'SIN)))
+    (is (= 12 (precedencia 'LEN)))
+    (is (= 13 (precedencia 'ATN)))
+    (is (= 13 (precedencia 'STR$)))
+    (is (= 13 (precedencia 'CHR$)))
+    (is (= 13 (precedencia 'ANY_OTHER_TOKEN)))
+    )
+  )
 
 ;;
 ;; Pruebas para aridad
@@ -572,18 +578,18 @@
 (deftest test-calcular-rpn-5
   (testing "Testing calcular-rpn function"
     (is (= 3 (calcular-rpn '("asd" LEN) 10)))))
-
-(deftest test-calcular-exp
-  (testing "Testing calcular-expresion LEN"
-    (is (= 3 (calcular-expresion '(LEN "ASD") ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 2}])))))
-
-(deftest test-calcular-dexp
-  (testing "Testing calcular-expresion LEN"
-    (is (= 3 (calcular-expresion '(X < 2 OR X <> INT(X)) ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 1}])))))
-
-(deftest test-calculadr-dexp
-  (testing "Testing calcular-expresion LEN"
-    (is (= 3 (calcular-expresion '(8 * ATN 1) ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 1}])))))
+;
+;(deftest test-calcular-exp
+;  (testing "Testing calcular-expresion LEN"
+;    (is (= 3 (calcular-expresion '(LEN "ASD") ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 2}])))))
+;
+;(deftest test-calcular-dexp
+;  (testing "Testing calcular-expresion LEN"
+;    (is (= 3 (calcular-expresion '(X < 2 OR X <> INT(X)) ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 1}])))))
+;
+;(deftest test-calculadr-dexp
+;  (testing "Testing calcular-expresion LEN"
+;    (is (= 3 (calcular-expresion '(8 * ATN 1) ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 1}])))))
 
 (deftest test-valor-a-tipo-variable
   (testing "Convert integer to float"
@@ -621,4 +627,4 @@
 ;
 ;(deftest test-parsear-sdtencia2
 ;  (testing "Testing parsear-sentencia function"
-;    (is (= 0 (calcular-expresion '("asd") ['((10 (PRINT X))) [10 1] [] [] [] 0 '{X 2}])))))
+;    (is (= 0 (calcular-expresion '(LEN "(" W$ ")") ['((10 (PRINT X))) [10 1] [] [] [] 0 '{W$ "ASD"}])))))

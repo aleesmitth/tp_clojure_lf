@@ -566,15 +566,14 @@
 (defn resolver-subfunciones
   ([sentencia amb]
    (let [sentencia-parseada (parsear-sentencia sentencia)]
-     (resolver-subfunciones (spy "f" (nth sentencia-parseada 0)) (spy "s" (nth sentencia-parseada 1)) (spy "t" (nth sentencia-parseada 2)) amb)))
+     (resolver-subfunciones (nth sentencia-parseada 0) (nth sentencia-parseada 1) (nth sentencia-parseada 2) amb)))
 
   ([primera-parte funcion ultima-parte amb]
-   (println (str "ambiente: " amb))
    ;(println "yep")
    ;(println (str "funcion: " primera-parte funcion ultima-parte))
    (if (empty? funcion)
-     (spy "break" (concat primera-parte ultima-parte))
-     (spy "concat" (concat primera-parte [(spy "expresion" (calcular-expresion (resolver-subfunciones funcion amb) (spy "amb" amb)))] ultima-parte))
+     (concat primera-parte ultima-parte)
+     (concat primera-parte [(calcular-expresion (resolver-subfunciones funcion amb) amb)] ultima-parte)
      )
    )
   )
@@ -588,7 +587,7 @@
 ; actualizado
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn evaluar [sentencia-original amb]
-  (let [sentencia (spy (resolver-subfunciones sentencia-original (spy "amb original" amb)))]
+  (let [sentencia (resolver-subfunciones sentencia-original amb)]
     ;(parsear-sentencia sentencia)
     (if (or (contains? (set sentencia) nil) (and (palabra-reservada? (first sentencia)) (= (second sentencia) '=)))
       (do (dar-error 16 (amb 1)) [nil amb])  ; Syntax error
@@ -654,15 +653,15 @@
                       (continuar-programa nuevo-amb)
                       [:omitir-restante nuevo-amb]))))
         RETURN (continuar-linea amb)
-        FOR (let [separados (spy (partition-by #(contains? #{"TO" "STEP"} (str %)) (next sentencia))]
+        FOR (let [separados (partition-by #(contains? #{"TO" "STEP"} (str %)) (next sentencia))]
               (if (not (or (and (= (count separados) 3) (variable-float? (ffirst separados)) (= (nth separados 1) '(TO)))
                            (and (= (count separados) 5) (variable-float? (ffirst separados)) (= (nth separados 1) '(TO)) (= (nth separados 3) '(STEP)))))
                 (do (dar-error 16 (amb 1)) [nil amb])  ; Syntax error
-                (let [valor-final (spy "final" (calcular-expresion (spy (nth separados 2)) amb)),
-                      valor-step (spy "step" (if (= (count separados) 5) (calcular-expresion (nth separados 4) amb) 1))]
+                (let [valor-final (calcular-expresion (nth separados 2) amb),
+                      valor-step (if (= (count separados) 5) (calcular-expresion (nth separados 4) amb) 1)]
                   (if (or (nil? valor-final) (nil? valor-step))
                     [nil amb]
-                    (recur (spy (first separados)) (spy (assoc amb 3 (conj (amb 3) [(ffirst separados) valor-final valor-step (amb 1)]))))))))
+                    (recur (first separados) (assoc amb 3 (conj (amb 3) [(ffirst separados) valor-final valor-step (amb 1)])))))))
         NEXT (if (<= (count (next sentencia)) 1)
                (retornar-al-for amb (fnext sentencia))
                (do (dar-error 16 (amb 1)) [nil amb]))  ; Syntax error
@@ -995,6 +994,8 @@
     (variable-string? var) (str val)
     (and (variable-integer? var) (float? val)) (eliminar-cero-entero (int val))
     (and (variable-integer? var) (string? val)) (eliminar-cero-entero (Integer/parseInt val))
+    (variable-integer? var) (eliminar-cero-entero val)
+    (variable-float? var) (eliminar-cero-decimal val)
     :else val
     )
   )
@@ -1081,14 +1082,19 @@
     (or (= token \,) (= (str token) ",")) 0
     (= token 'OR) 1
     (= token 'AND) 2
-    (or (= token '=) (= token '<>) (= (str token) "<>") (= token '<) (= token '>) (= token '<=) (= token '>=)) 4
-    (or (= token '+) (= token '-)) 5
-    (or (= token 'LEN) (= token 'STR$) (= token 'CHR$) (= token 'INT) (= token 'SIN) (= token 'ATN)) 6
-    (= token '*) 7
-    (= token '/) 8
-    (= token '-u) 9
-    (= token \^) 10
-    :else 11
+    (= token '=) 3
+    (or (= token '<>) (= (str token) "<>") (= token '<) (= token '>) (= token '<=) (= token '>=)) 4
+    (= token '-) 5
+    (= token '+) 6
+    (= token '/) 7
+    (= token '*) 8
+    (= token \^) 9
+    (= token '-u) 10
+    (= token 'INT) 11
+    (= token 'SIN) 12
+    (= token 'LEN) 12
+    (or (= token 'ATN) (= token 'STR$) (= token 'CHR$)) 13
+    :else 13
     )
   )
 
