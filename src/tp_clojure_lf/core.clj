@@ -56,6 +56,10 @@
 (declare procesar-expresion)              ; Funcion auxiliar
 (declare spy)                             ; Funcion auxiliar
 (declare valor-a-tipo-variable)           ; Funcion auxiliar
+(declare split-subfunciones)              ; Funcion auxiliar
+(declare encontrar-parentesis)                 ; Funcion auxiliar
+(declare procesar-lista)                 ; Funcion auxiliar
+(declare splitear-symbolo-distinto)
 
 (defn -main
   "Alejandro Nicolás Smith 101730"
@@ -372,6 +376,7 @@
 ; 7
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn calcular-expresion [expr amb]
+  ;(spy "rpn" (calcular-rpn (spy "shu" (shunting-yard (spy "des" (desambiguar (spy "pre" (preprocesar-expresion (spy "expr" expr) amb)))))) (amb 1)))
   (calcular-rpn (shunting-yard (desambiguar (preprocesar-expresion expr amb))) (amb 1))
   )
 
@@ -577,6 +582,40 @@
      )
    )
   )
+
+(defn encontrar-parentesis [[acc x current] y]
+  (let [new-x (cond
+                (= y "(") (inc x)
+                (= y ")") (dec x)
+                :else x)
+        new-current (conj current y)]
+    (conj current y)
+    (cond
+      (and (= new-x 0) (= x 1) (= y ")")) [(conj acc new-current) new-x []]
+      (and (= new-x 1) (= x 0) (= y "(")) [(conj acc current) new-x [y]]
+      :else [acc new-x new-current]
+      )))
+
+(defn split-subfunciones [sentencia amb]
+  (if (not (some #(= (str %) "(") sentencia)) (spy "@@" sentencia)
+  (let [initial-result (reduce encontrar-parentesis [[] 0 []] sentencia)
+        first-level-result (conj (first initial-result) (last initial-result))]
+    (apply concat (map
+      (fn [x] (if (= (first x) "(")
+                (let [temp-initial-second-level-result (reduce encontrar-parentesis [[] 0 []] (rest (butlast x)))
+                      second-level-result (conj (first temp-initial-second-level-result) (last temp-initial-second-level-result))]
+                  [(calcular-expresion (apply concat (map
+                    #(if (= (first %) "(")
+                       [(calcular-expresion (rest (butlast %)) amb)]
+                       %)
+                    second-level-result)) amb)])
+                x))
+      first-level-result)))
+    ))
+
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; A PARTIR DE ESTE PUNTO HAY QUE COMPLETAR LAS FUNCIONES DADAS ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -586,8 +625,9 @@
 ; con un resultado (usado luego por evaluar-linea) y un ambiente
 ; actualizado
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn evaluar [sentencia-original amb]
-  (let [sentencia (resolver-subfunciones sentencia-original amb)]
+(defn evaluar [sentencia amb]
+  ;(let [sentencia (spy (str "sentencia:" (amb 1) (last amb)) sentencia-original)]
+
     ;(parsear-sentencia sentencia)
     (if (or (contains? (set sentencia) nil) (and (palabra-reservada? (first sentencia)) (= (second sentencia) '=)))
       (do (dar-error 16 (amb 1)) [nil amb])  ; Syntax error
@@ -676,7 +716,7 @@
               [nil amb]
               [:sin-errores resu]))
           (do (dar-error 16 (amb 1)) [nil amb]))))  ; Syntax error
-    )
+
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -692,7 +732,7 @@
      (case operador
        -u (- operando)
        LEN (count operando)
-       INT (if (not (number? operando)) (eliminar-cero-entero (Integer/parseInt operando)) operando)
+       INT (if (not (number? operando)) (eliminar-cero-entero (Integer/parseInt operando)) (eliminar-cero-entero (int operando)))
        ATN (if (not (number? operando)) (dar-error 163 nro-linea) (Math/atan operando))
        SIN (if (not (number? operando)) (dar-error 163 nro-linea) (Math/sin operando))
        STR$ (if (not (number? operando)) (dar-error 163 nro-linea) (eliminar-cero-entero operando)) ; Type mismatch error
@@ -762,7 +802,7 @@
   (if (or (= x "^") (= x (symbol "^"))) true
                 (let [operadores #{'+ '- '* '/ \^ '= '<> '< '<= '> '>= 'AND 'OR 'LEN 'SIN 'ATN 'INT 'STR$ 'CHR$ '-u}
                       x-symbol (if (string? x) (symbol x) x)]
-                  (contains? operadores x-symbol))))
+                  (or (contains? operadores x-symbol) (= (str x-symbol) "<>")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; anular-invalidos: recibe una lista de simbolos y la retorna con
@@ -1014,17 +1054,29 @@
 ; [((10 (PRINT X))) [10 1] [] [] [] 0 {X$ "HOLA MUNDO"}]
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn ejecutar-asignacion [sentencia amb]
-  ;(println "asd")
-  ;(println (str "ejecutar-asignacion: " sentencia))
   (let [var (first sentencia) ; Extract the variable from the assignment
         expr (rest (rest sentencia)) ; Extract the expression from the assignment
         vars (last amb) ; Extract the variables from the environment
-        expr-with-vars (clojure.walk/postwalk-replace vars expr) ; Replace symbols in the expression with their values from the environment
+        expr-with-vars (map #(if (contains? vars %) (vars %) %) expr) ; Replace symbols in the expression with their values from the environment
         operation (shunting-yard expr-with-vars)
         operation-symbol-first (concat [(last operation)] (butlast operation))
         val-raw (if (<= (count sentencia) 3) 0 (apply aplicar (concat operation-symbol-first [0])))]
-    (let [updated-vars (assoc vars var (if (<= (count sentencia) 3) (valor-a-tipo-variable var (first expr)) val-raw))] ; Update the variable in the environment
+    (let [updated-vars (assoc vars var (if (<= (count sentencia) 3) (valor-a-tipo-variable var (first expr-with-vars)) val-raw))] ; Update the variable in the environment
       (assoc amb (dec (count amb)) updated-vars)))) ; Update the environment with the new variables
+
+
+(defn splitear-symbolo-distinto [symb]
+  (let [symb-str (str symb)
+        split-symb (clojure.string/split symb-str #"(?<=>)")
+        joined-symb (clojure.string/join " " split-symb)]
+    (symbol joined-symb)))
+
+(defn procesar-lista [lst]
+  (map (fn [item]
+         (if (symbol? item)
+           (splitear-symbolo-distinto item)
+           item))
+       lst))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; preprocesar-expresion: recibe una expresion y la retorna con
@@ -1036,13 +1088,13 @@
 ; (5 + 0 / 2 * 0)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn preprocesar-expresion [expr amb]
-  (let [vars (last amb)] ; Extract the variables from the environment
-    (map (fn [item] ; Map over each item in the expression
+  (let [vars (last amb), expr (procesar-lista expr)]
+    (map (fn [item]
            (cond
-             (symbol? item) ; If the item is a symbol
-             (if-let [val (get vars item)] ; If the symbol is a variable in the environment
-               val ; Replace it with its value
-               (if (operador? item) item (if (variable-string? item) "" 0)))
+             (symbol? item)
+             (if-let [val (get vars item)]
+               val
+               (if (or (operador? item) (= (str item) "(") (= (str item) ")")) item (if (variable-string? item) "" 0)))
              :else (if (string? item) item (if (number? item) item 0))))
          (anular-invalidos expr))))
 
@@ -1080,20 +1132,19 @@
   (cond
     (or (= (str token) ")") (= (str token) "(")) -1
     (or (= token \,) (= (str token) ",")) 0
-    (= token 'OR) 1
-    (= token 'AND) 2
-    (= token '=) 3
-    (or (= token '<>) (= (str token) "<>") (= token '<) (= token '>) (= token '<=) (= token '>=)) 4
-    (= token '-) 5
-    (= token '+) 6
-    (= token '/) 7
-    (= token '*) 8
-    (= token \^) 9
-    (= token '-u) 10
-    (= token 'INT) 11
+    (= token 'OR) 2
+    (= token 'AND) 3
+    (= token '=) 4
+    (or (= token '<>) (= (str token) "<>") (= token '<) (= token '>) (= token '<=) (= token '>=)) 5
+    (= token '-) 6
+    (= token '+) 7
+    (= token '/) 8
+    (= token '*) 9
+    (= (str token) "^") 10
+    (= token '-u) 11
     (= token 'SIN) 12
     (= token 'LEN) 12
-    (or (= token 'ATN) (= token 'STR$) (= token 'CHR$)) 13
+    (or (= token 'ATN) (= token 'STR$) (= token 'CHR$) (= token 'INT)) 13
     :else 13
     )
   )

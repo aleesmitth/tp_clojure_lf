@@ -627,4 +627,12 @@
 ;
 ;(deftest test-parsear-sdtencia2
 ;  (testing "Testing parsear-sentencia function"
-;    (is (= 0 (calcular-expresion '(LEN "(" W$ ")") ['((10 (PRINT X))) [10 1] [] [] [] 0 '{W$ "ASD"}])))))
+;    (is (= 3.5 (calcular-expresion '(INT(A)<>A) ['() [] [] [] [] 0 '{A 7}])))))
+;
+;(deftest test-parsear-sdtencia32
+;  (testing "Testing parsear-sentencia function"
+;    (is (= 3.5 (spy (split-subfunciones '(INT "(" A ")" <> A) ['() [] [] [] [] 0 '{A 7.5}]))))))
+;
+;(deftest test-parsear-sdtedncia32
+;  (testing "Testing parsear-sentencia function"
+;    (is (= 3.5 (spy (ejecutar-asignacion '(B = C) ['() [] [] [] [] 0 '{A 20, B 20, C 5}]))))))
