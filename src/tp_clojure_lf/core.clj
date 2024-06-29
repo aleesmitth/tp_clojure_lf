@@ -638,7 +638,7 @@
 ; actualizado
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn evaluar [sentencia amb]
-  ;(let [sentencia (spy (str "sentencia:" (amb 1) (last amb)) sentencia-original)]
+  ;(let [sentencia (spy (str "sentencia:" (amb 1) (rest amb)) sentencia-original)]
 
     ;(parsear-sentencia sentencia)
     (if (or (contains? (set sentencia) nil) (and (palabra-reservada? (first sentencia)) (= (second sentencia) '=)))
@@ -721,6 +721,11 @@
               (if (and (nil? resu) (some? args))
                 [nil amb]
                 [:sin-errores resu]))
+        READ (let [resu (ejecutar-asignacion (list (first (rest sentencia)) '= ((amb 4) (amb 5))) amb)]
+               (if (nil? resu)
+                 [nil amb]
+                 [:sin-errores (assoc resu 5 (inc (resu 5)))]))
+        RESTORE [:sin-errores (assoc amb 5 0)]
         END [:omitir-restante (assoc amb 1 [:ejecucion-inmediata 0])]
         (if (= (second sentencia) '=)
           (let [resu (ejecutar-asignacion sentencia amb)]
@@ -746,6 +751,7 @@
        LEN (count operando)
        INT (if (not (number? operando)) (eliminar-cero-entero (Integer/parseInt operando)) (eliminar-cero-entero (int operando)))
        ATN (if (not (number? operando)) (dar-error 163 nro-linea) (Math/atan operando))
+       ASC (if (string? operando) (int (first operando)) (dar-error 163 nro-linea))
        SIN (if (not (number? operando)) (dar-error 163 nro-linea) (Math/sin operando))
        STR$ (if (not (number? operando)) (dar-error 163 nro-linea) (str operando)) ; Type mismatch error
        CHR$ (if (or (< operando 0) (> operando 255)) (dar-error 53 nro-linea) (str (char operando)))))) ; Illegal quantity error
@@ -812,7 +818,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn operador? [x]
   (if (or (= x "^") (= x (symbol "^"))) true
-                (let [operadores #{'+ '- '* '/ \^ '= '<> '< '<= '> '>= 'AND 'OR 'LEN 'SIN 'ATN 'INT 'STR$ 'CHR$ 'MID$ 'MID3$ 'MID2$ '-u}
+                (let [operadores #{'+ '- '* '/ \^ '= '<> '< '<= '> '>= 'AND 'OR 'LEN 'SIN 'ASC 'ATN 'INT 'STR$ 'CHR$ 'MID$ 'MID3$ 'MID2$ '-u}
                       x-symbol (if (string? x) (symbol x) x)]
                   (or (contains? operadores x-symbol) (= (str x-symbol) "<>")))))
 
@@ -1221,7 +1227,6 @@
         (= token 'DATA)
         (= token 'READ)
         (= token 'REM)
-        (= token 'RESTORE)
         (= token 'NEXT)
         (= token 'GOTO)) 1
     :else 0

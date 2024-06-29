@@ -655,7 +655,7 @@
 ;
 ;(deftest test-parsear-sdtefdndciad32
 ;  (testing "Testing parsear-sentencia function"
-;    (is (= 3.5 (calcular-expresion '(5) ['() [] [] [] [] 0 '{N$ "ALE", I 2}])))))
+;    (is (= 3.5 (calcular-expresion '(ASC "(" MID3$ "(" "ALE" 1 1 ")" ")" ) ['() [] [] [] [] 0 '{N$ "ALE", I 2}])))))
 ;
 ;(deftest test-parsear-sdtefdnddciad32
 ;  (testing "Testing parsear-sentencia function"
@@ -663,4 +663,4 @@
 ;
 ;(deftest test-parsear-sdtedncia32
 ;  (testing "Testing parsear-sentencia function"
-;    (is (= 3.5 (spy (ejecutar-asignacion '(H$ = CHR$ "(" 65 + B - 10 ")") ['() [] [] [] [] 0 '{B 10, HEX$ "ALE", H$ 9}]))))))
+;    (is (= 3.5 (spy (ejecutar-asignacion '(L = ASC(MID$(W$,I,1)) - 64) ['() [] [] [] [] 0 '{I 1, HEX$ "ALE", W$ 3}]))))))
