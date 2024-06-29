@@ -1070,16 +1070,16 @@
         expr (rest (rest sentencia)) ; Extract the expression from the assignment
         vars (last amb) ; Extract the variables from the environment
         expr-with-vars (map #(if (contains? vars %) (vars %) %) expr) ; Replace symbols in the expression with their values from the environment
-        operation (shunting-yard expr-with-vars)
-        operation-symbol-first (concat [(last operation)] (butlast operation))
-        val-raw (if (<= (count sentencia) 3) 0 (apply aplicar (concat operation-symbol-first [0])))]
+        val-raw (calcular-expresion expr-with-vars amb)]
+        ;operation-symbol-first (concat [(last operation)] (butlast operation))
+        ;val-raw (if (<= (count sentencia) 3) 0 (apply aplicar (spy "op" (concat operation-symbol-first [0]))))]
     (let [updated-vars (assoc vars var (if (<= (count sentencia) 3) (valor-a-tipo-variable var (first expr-with-vars)) val-raw))] ; Update the variable in the environment
       (assoc amb (dec (count amb)) updated-vars)))) ; Update the environment with the new variables
 
 
 (defn splitear-symbolo-distinto [symb]
   (let [symb-str (str symb)
-        split-symb (clojure.string/split symb-str #"(?<=>)")
+        split-symb (clojure.string/split symb-str #"(?<=<>)")
         joined-symb (clojure.string/join " " split-symb)]
     (symbol joined-symb)))
 

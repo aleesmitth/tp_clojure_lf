@@ -648,3 +648,19 @@
 ;(deftest test-parsear-sdtefdndciad32
 ;  (testing "Testing parsear-sentencia function"
 ;    (is (= 3.5 (spy (stitch-mid-with-params '(MID$ ";" "(" N$ "," I ")")))))))
+
+;(deftest test-parsear-sdtefdndciad32
+;  (testing "Testing parsear-sentencia function"
+;    (is (= 3.5 (calcular-expresion '(CHR$ "(" 65 + 14 - 10 ")") ['() [] [] [] [] 0 '{N$ "ALE", I 2}])))))
+;
+;(deftest test-parsear-sdtefdndciad32
+;  (testing "Testing parsear-sentencia function"
+;    (is (= 3.5 (calcular-expresion '(5) ['() [] [] [] [] 0 '{N$ "ALE", I 2}])))))
+;
+;(deftest test-parsear-sdtefdnddciad32
+;  (testing "Testing parsear-sentencia function"
+;    (is (= 3.5 (splitear-symbolo-distinto '>A)))))
+;
+;(deftest test-parsear-sdtedncia32
+;  (testing "Testing parsear-sentencia function"
+;    (is (= 3.5 (spy (ejecutar-asignacion '(H$ = CHR$ "(" 65 + B - 10 ")") ['() [] [] [] [] 0 '{B 10, HEX$ "ALE", H$ 9}]))))))
