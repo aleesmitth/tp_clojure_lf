@@ -721,7 +721,7 @@
               (if (and (nil? resu) (some? args))
                 [nil amb]
                 [:sin-errores resu]))
-        END [:sin-errores amb]
+        END [:omitir-restante (assoc amb 1 [:ejecucion-inmediata 0])]
         (if (= (second sentencia) '=)
           (let [resu (ejecutar-asignacion sentencia amb)]
             (if (nil? resu)
@@ -747,7 +747,7 @@
        INT (if (not (number? operando)) (eliminar-cero-entero (Integer/parseInt operando)) (eliminar-cero-entero (int operando)))
        ATN (if (not (number? operando)) (dar-error 163 nro-linea) (Math/atan operando))
        SIN (if (not (number? operando)) (dar-error 163 nro-linea) (Math/sin operando))
-       STR$ (if (not (number? operando)) (dar-error 163 nro-linea) (eliminar-cero-entero operando)) ; Type mismatch error
+       STR$ (if (not (number? operando)) (dar-error 163 nro-linea) (str operando)) ; Type mismatch error
        CHR$ (if (or (< operando 0) (> operando 255)) (dar-error 53 nro-linea) (str (char operando)))))) ; Illegal quantity error
   ([operador operando1 operando2 nro-linea]
    ;(println (str "aplicar 4: " operador operando1 operando2 nro-linea))
