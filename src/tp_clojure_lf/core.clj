@@ -57,11 +57,9 @@
 (declare spy)                             ; Funcion auxiliar
 (declare valor-a-tipo-variable)           ; Funcion auxiliar
 (declare split-subfunciones)              ; Funcion auxiliar
-(declare encontrar-parentesis)                 ; Funcion auxiliar
-(declare procesar-lista)                 ; Funcion auxiliar
-(declare splitear-symbolo-distinto)
-(declare desambiguar-mid-helper)
-(declare stitch-mid-with-params)
+(declare splitear-symbolo-distinto)       ; Funcion auxiliar
+(declare desambiguar-mid-helper)          ; Funcion auxiliar
+(declare stitch-mid-with-params)          ; Funcion auxiliar
 
 (defn -main
   "Alejandro Nicolás Smith 101730"
@@ -595,39 +593,6 @@
    )
   )
 
-(defn encontrar-parentesis [[acc x current] y]
-  (let [new-x (cond
-                (= y "(") (inc x)
-                (= y ")") (dec x)
-                :else x)
-        new-current (conj current y)]
-    (conj current y)
-    (cond
-      (and (= new-x 0) (= x 1) (= y ")")) [(conj acc new-current) new-x []]
-      (and (= new-x 1) (= x 0) (= y "(")) [(conj acc current) new-x [y]]
-      :else [acc new-x new-current]
-      )))
-
-(defn split-subfunciones [sentencia amb]
-  (if (not (some #(= (str %) "(") sentencia)) (spy "@@" sentencia)
-  (let [initial-result (reduce encontrar-parentesis [[] 0 []] sentencia)
-        first-level-result (conj (first initial-result) (last initial-result))]
-    (apply concat (map
-      (fn [x] (if (= (first x) "(")
-                (let [temp-initial-second-level-result (reduce encontrar-parentesis [[] 0 []] (rest (butlast x)))
-                      second-level-result (conj (first temp-initial-second-level-result) (last temp-initial-second-level-result))]
-                  [(calcular-expresion (apply concat (map
-                    #(if (= (first %) "(")
-                       [(calcular-expresion (rest (butlast %)) amb)]
-                       %)
-                    second-level-result)) amb)])
-                x))
-      first-level-result)))
-    ))
-
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; A PARTIR DE ESTE PUNTO HAY QUE COMPLETAR LAS FUNCIONES DADAS ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -848,7 +813,7 @@
               (variable-float? %)
               (variable-integer? %)
               (variable-string? %)
-              (> (count (name %)) 2)) % nil) sentencia))
+              (>= (count (name %)) 2)) % nil) sentencia))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; cargar-linea: recibe una linea de codigo y un ambiente y retorna
