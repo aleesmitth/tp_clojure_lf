@@ -60,6 +60,8 @@
 (declare encontrar-parentesis)                 ; Funcion auxiliar
 (declare procesar-lista)                 ; Funcion auxiliar
 (declare splitear-symbolo-distinto)
+(declare desambiguar-mid-helper)
+(declare stitch-mid-with-params)
 
 (defn -main
   "Alejandro Nicolás Smith 101730"
@@ -534,10 +536,20 @@
          interc (reduce #(if (and (or (number? (last %1)) (string? (last %1)) (variable? (last %1)) (= (symbol ")") (last %1)))
                                   (or (number? %2) (string? %2) (variable? %2) (funcion? %2) (= (symbol "(") %2)))
                            (conj (conj %1 (symbol ";")) %2) (conj %1 %2)) nueva),
-         ex (partition-by #(= % (symbol ",t")) (desambiguar-comas interc)),
+         ex (partition-by #(= % (symbol ",t")) (stitch-mid-with-params (desambiguar-comas interc))),
          expresiones (apply concat (map #(partition-by (fn [x] (= x (symbol ";"))) %) ex))]
      (imprimir [expresiones amb])))
   )
+
+(defn stitch-mid-with-params
+  ([lst] (if (not (some #(= % 'MID$) lst)) lst (stitch-mid-with-params lst 0)))
+  ([lst x]
+  (concat '(MID$) (loop [res [] input lst]
+      (if (empty? input)
+        res
+        (if (= 'MID$ (first input))
+          (recur res (drop 2 input))  ; drop the next element
+          (recur (conj res (first input)) (rest input))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; desambiguar-comas: recibe una expresion en forma de lista y
@@ -757,7 +769,7 @@
          / (if (= operando2 0) (dar-error 133 nro-linea) (/ operando1 operando2))  ; Division by zero error
          AND (let [op1 (+ 0 operando1), op2 (+ 0 operando2)] (if (and (not= op1 0) (not= op2 0)) 1 0))
          OR (let [op1 (+ 0 operando1), op2 (+ 0 operando2)] (if (or (not= op1 0) (not= op2 0)) 1 0))
-         MID$ (if (< operando2 1)
+         MID2$ (if (< operando2 1)
                 (dar-error 53 nro-linea)  ; Illegal quantity error
                 (let [ini (dec operando2)] (if (>= ini (count operando1)) "" (subs operando1 ini))))))))
   ([operador operando1 operando2 operando3 nro-linea]
@@ -785,7 +797,7 @@
 ; false
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn palabra-reservada? [x]
-  (let [palabras-reservadas #{"EXIT" "ENV" "DATA" "REM" "NEW" "CLEAR" "LIST" "RUN" "LOAD" "SAVE" "LET" "AND" "OR" "INT" "SIN" "ATN" "LEN" "MID$" "STR$" "CHR$" "ASC" "GOTO" "ON" "IF" "THEN" "FOR" "TO" "STEP" "NEXT" "GOSUB" "RETURN" "END" "INPUT" "READ" "RESTORE" "PRINT" "?"}]
+  (let [palabras-reservadas #{"EXIT" "ENV" "DATA" "REM" "NEW" "CLEAR" "LIST" "RUN" "LOAD" "SAVE" "LET" "AND" "OR" "INT" "SIN" "ATN" "LEN" "MID$" "MID2$" "MID3$" "STR$" "CHR$" "ASC" "GOTO" "ON" "IF" "THEN" "FOR" "TO" "STEP" "NEXT" "GOSUB" "RETURN" "END" "INPUT" "READ" "RESTORE" "PRINT" "?"}]
     (contains? palabras-reservadas (str x))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -800,7 +812,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn operador? [x]
   (if (or (= x "^") (= x (symbol "^"))) true
-                (let [operadores #{'+ '- '* '/ \^ '= '<> '< '<= '> '>= 'AND 'OR 'LEN 'SIN 'ATN 'INT 'STR$ 'CHR$ '-u}
+                (let [operadores #{'+ '- '* '/ \^ '= '<> '< '<= '> '>= 'AND 'OR 'LEN 'SIN 'ATN 'INT 'STR$ 'CHR$ 'MID$ 'MID3$ 'MID2$ '-u}
                       x-symbol (if (string? x) (symbol x) x)]
                   (or (contains? operadores x-symbol) (= (str x-symbol) "<>")))))
 
@@ -1094,7 +1106,7 @@
              (symbol? item)
              (if-let [val (get vars item)]
                val
-               (if (or (operador? item) (= (str item) "(") (= (str item) ")")) item (if (variable-string? item) "" 0)))
+               (if (or (operador? item) (= (str item) "(") (= (str item) ")") (= (str item) ",")) item (if (variable-string? item) "" 0)))
              :else (if (string? item) item (if (number? item) item 0))))
          (anular-invalidos expr))))
 
@@ -1105,14 +1117,28 @@
 ; user=> (desambiguar (list '- 2 '* (symbol "(") '- 3 '+ 5 '- (symbol "(") '+ 2 '/ 7 (symbol ")") (symbol ")")))
 ; (-u 2 * ( -u 3 + 5 - ( 2 / 7 ) ))
 ; user=> (desambiguar (list 'MID$ (symbol "(") 1 (symbol ",") 2 (symbol ")")))
-; (MID$ ( 1 , 2 ))
+; (MID2$ ( 1 , 2 ))
 ; user=> (desambiguar (list 'MID$ (symbol "(") 1 (symbol ",") 2 (symbol ",") 3 (symbol ")")))
 ; (MID3$ ( 1 , 2 , 3 ))
 ; user=> (desambiguar (list 'MID$ (symbol "(") 1 (symbol ",") '- 2 '+ 'K (symbol ",") 3 (symbol ")")))
 ; (MID3$ ( 1 , -u 2 + K , 3 ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn desambiguar [expr]
-  (desambiguar-mas-menos (desambiguar-mid (desambiguar-comas expr))))
+    (desambiguar-mas-menos (concat (map-indexed
+              (fn [i x] (desambiguar-mid-helper x i expr))
+      expr)))
+    )
+
+(defn desambiguar-mid-helper [x i whole-list]
+  (if (not (some #(= % 'MID$) whole-list)) x
+  (if (= x 'MID$)
+    (let [args (take-while #(not= (str %) ")") (drop (inc i) whole-list))
+          num-args (count (filter #(= (str %) ",") (rest (butlast args))))]
+      (cond
+        (= num-args 1) 'MID2$
+        (= num-args 2) 'MID3$
+        :else x))
+    (if (= (str x) ",") nil x))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; precedencia: recibe un token y retorna el valor de su
@@ -1144,7 +1170,7 @@
     (= token '-u) 11
     (= token 'SIN) 12
     (= token 'LEN) 12
-    (or (= token 'ATN) (= token 'STR$) (= token 'CHR$) (= token 'INT)) 13
+    (or (= token 'ATN) (= token 'STR$) (= token 'CHR$) (= token 'INT) (= token 'MID$) (= token 'MID2$) (= token 'MID3$)) 13
     :else 13
     )
   )
@@ -1167,7 +1193,7 @@
   (cond
     (= token '-u) 1
     (= token 'MID3$) 3
-    (or (= token 'MID$)
+    (or (= token 'MID2$)
         (= token '*)
         (= token '/)
         (= token '+)

@@ -474,23 +474,23 @@
 ;;
 (deftest test-desambiguar-1
   (testing "desambiguar function with unary minus"
-    (is (= (str (desambiguar (list '- 2 '* (symbol "(") '- 3 '+ 5 '- (symbol "(") '+ 2 '/ 7 (symbol ")") (symbol ")")))
-                (str '(-u 2 * ( -u 3 + 5 - ( 2 / 7 ) ))))))))
+    (is (= (desambiguar '(- 2 * "(" - 3 + 5 - "(" + 2 / 7 ")" ")"))
+                '(-u 2 * "(" -u 3 + 5 - "(" 2 / 7 ")" ")")))))
 
 (deftest test-desambiguar-2
   (testing "desambiguar function with MID$"
-    (is (= (str (desambiguar (list 'MID$ (symbol "(") 1 (symbol ",") 2 (symbol ")")))
-                (str '(MID$ ( 1 , 2 ))))))))
+    (is (= (desambiguar '(MID$ "(" 1 "," 2 ")"))
+           '(MID2$ "(" 1 2 ")")))))
 
 (deftest test-desambiguar-3
   (testing "desambiguar function with MID3$"
-    (is (= (str (desambiguar (list 'MID$ (symbol "(") 1 (symbol ",") 2 (symbol ",") 3 (symbol ")")))
-                (str '(MID3$ ( 1 , 2 , 3 ))))))))
+    (is (= (desambiguar '( MID$ "(" 1 "," 2 "," 3 ")"))
+                '(MID3$ "(" 1 2 3 ")")))))
 
 (deftest test-desambiguar-4
   (testing "desambiguar function with MID3$ and unary minus"
-    (is (= (str (desambiguar (list 'MID$ (symbol "(") 1 (symbol ",") '- 2 '+ 'K (symbol ",") 3 (symbol ")")))
-                (str '(MID3$ ( 1 , -u 2 + K , 3 ))))))))
+    (is (= (desambiguar '(MID$ "(" 1 "," - 2 + K "," 3 ")"))
+                '(MID3$ "(" 1 -u 2 + K 3 ")")))))
 
 ;;
 ;; Pruebas para buscar-lineas-restantes
@@ -635,4 +635,16 @@
 ;
 ;(deftest test-parsear-sdtedncia32
 ;  (testing "Testing parsear-sentencia function"
-;    (is (= 3.5 (spy (ejecutar-asignacion '(B = C) ['() [] [] [] [] 0 '{A 20, B 20, C 5}]))))))
+;    (is (= 3.5 (spy (calcular-expresion '(MID$ "(" "ALE" "," 2 ")") ['() [] [] [] [] 0 '{N$ "ALE", I 2}]))))))
+;
+;(deftest test-parsear-sdtednciad32
+;  (testing "Testing parsear-sentencia function"
+;    (is (= 3.5 (spy (desambiguar '(MID$ "(" 1 "," 1 "," 1")")))))))
+;
+;(deftest test-parsear-sdtedndciad32
+;  (testing "Testing parsear-sentencia function"
+;    (is (= 3.5 (spy (desambiguar-comas '(MID3$ "(" 1 "," 1 "," 1")")))))))
+;
+;(deftest test-parsear-sdtefdndciad32
+;  (testing "Testing parsear-sentencia function"
+;    (is (= 3.5 (spy (stitch-mid-with-params '(MID$ ";" "(" N$ "," I ")")))))))
