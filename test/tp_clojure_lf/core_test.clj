@@ -655,7 +655,7 @@
 ;
 ;(deftest test-parsear-sdtefdndciad32
 ;  (testing "Testing parsear-sentencia function"
-;    (is (= 3.5 (calcular-expresion '(ASC "(" MID3$ "(" "ALE" 1 1 ")" ")" ) ['() [] [] [] [] 0 '{N$ "ALE", I 2}])))))
+;    (is (= 0 (calcular-expresion '(STR$ "(" B ")" + X$) ['() [] [] [] [] 0 '{X$ "", B 1}])))))
 ;
 ;(deftest test-parsear-sdtefdnddciad32
 ;  (testing "Testing parsear-sentencia function"

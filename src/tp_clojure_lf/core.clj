@@ -53,7 +53,6 @@
 (declare eliminar-cero-entero)            ; IMPLEMENTAR [OK]
 
 (declare expandir-aux)                    ; Funcion auxiliar
-(declare procesar-expresion)              ; Funcion auxiliar
 (declare spy)                             ; Funcion auxiliar
 (declare valor-a-tipo-variable)           ; Funcion auxiliar
 (declare split-subfunciones)              ; Funcion auxiliar
@@ -481,32 +480,6 @@
     (catch Exception e (dar-error 16 nro-linea)))  ; Syntax error
   )
 
-(defn procesar-expresion
-  ([v]
-   (let [expresiones (v 0), amb (v 1)]
-     (cond
-       (empty? expresiones) (do (prn) (flush) :sin-errores)
-       (and (empty? (next expresiones)) (= (first expresiones) (list (symbol ";")))) (do (pr) (flush) :sin-errores)
-       (and (empty? (next expresiones)) (= (first expresiones) (list (symbol ",t")))) (do (printf "\t\t") (flush) :sin-errores)
-       (= (first expresiones) (list (symbol ";"))) (do (pr) (flush) (recur [(next expresiones) amb]))
-       (= (first expresiones) (list (symbol ",t"))) (do (printf "\t\t") (flush) (recur [(next expresiones) amb]))
-       :else (let [resu (eliminar-cero-entero (calcular-expresion (first expresiones) amb))]
-               ;(if (nil? resu)
-                 resu
-                 ;(do (print resu) (flush) (recur [(next expresiones) amb])))
-       ))))
-  ([lista-expr amb]
-   (let [nueva (cons (conj [] (first lista-expr)) (rest lista-expr)),
-         variable? #(or (variable-integer? %) (variable-float? %) (variable-string? %)),
-         funcion? #(and (> (aridad %) 0) (not (operador? %))),
-         interc (reduce #(if (and (or (number? (last %1)) (string? (last %1)) (variable? (last %1)) (= (symbol ")") (last %1)))
-                                  (or (number? %2) (string? %2) (variable? %2) (funcion? %2) (= (symbol "(") %2)))
-                           (conj (conj %1 (symbol ";")) %2) (conj %1 %2)) nueva),
-         ex (partition-by #(= % (symbol ",t")) (desambiguar-comas interc)),
-         expresiones (apply concat (map #(partition-by (fn [x] (= x (symbol ";"))) %) ex))]
-     (procesar-expresion [expresiones amb])))
-  )
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; imprimir: recibe una lista de expresiones (separadas o no
 ; mediante puntos y comas o comas) y un ambiente, y las muestra
@@ -682,10 +655,12 @@
         NEXT (if (<= (count (next sentencia)) 1)
                (retornar-al-for amb (fnext sentencia))
                (do (dar-error 16 (amb 1)) [nil amb]))  ; Syntax error
-        LET (let [args (next sentencia), resu (ejecutar-asignacion (concat (take 2 args) [(procesar-expresion (next (next args)) amb)]) amb)]
-              (if (and (nil? resu) (some? args))
+        LET (if (= (second (rest sentencia)) '=)
+              (let [resu (ejecutar-asignacion (list (first (rest sentencia)) '= (calcular-expresion (rest (rest (rest sentencia))) amb)) amb)]
+              (if (nil? resu)
                 [nil amb]
                 [:sin-errores resu]))
+              (do (dar-error 16 (amb 1)) [nil amb]))
         READ (let [resu (ejecutar-asignacion (list (first (rest sentencia)) '= ((amb 4) (amb 5))) amb)]
                (if (nil? resu)
                  [nil amb]
