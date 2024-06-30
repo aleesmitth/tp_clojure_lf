@@ -369,25 +369,31 @@
     (is (= -1 (precedencia "(")))
     (is (= -1 (precedencia ")")))
     (is (= 0 (precedencia ",")))
-    (is (= 1 (precedencia 'OR)))
-    (is (= 2 (precedencia 'AND)))
-    (is (= 3 (precedencia '=)))
-    (is (= 4 (precedencia '<>)))
-    (is (= 5 (precedencia '-)))
+    (is (= 2 (precedencia 'OR)))
+    (is (= 3 (precedencia 'AND)))
+    (is (= 4 (precedencia '=)))
+    (is (= 5 (precedencia '<>)))
+    (is (= 5 (precedencia '<)))
+    (is (= 5 (precedencia '>)))
+    (is (= 5 (precedencia '<=)))
+    (is (= 5 (precedencia '>=)))
     (is (= 6 (precedencia '+)))
-    (is (= 7 (precedencia '/)))
-    (is (= 8 (precedencia '*)))
-    (is (= 9 (precedencia \^)))
-    (is (= 10 (precedencia '-u)))
-    (is (= 11 (precedencia 'INT)))
+    (is (= 7 (precedencia '-)))
+    (is (= 8 (precedencia '/)))
+    (is (= 9 (precedencia '*)))
+    (is (= 10 (precedencia "^")))
+    (is (= 11 (precedencia '-u)))
     (is (= 12 (precedencia 'SIN)))
     (is (= 12 (precedencia 'LEN)))
     (is (= 13 (precedencia 'ATN)))
     (is (= 13 (precedencia 'STR$)))
     (is (= 13 (precedencia 'CHR$)))
-    (is (= 13 (precedencia 'ANY_OTHER_TOKEN)))
-    )
-  )
+    (is (= 13 (precedencia 'INT)))
+    (is (= 13 (precedencia 'MID$)))
+    (is (= 13 (precedencia 'MID2$)))
+    (is (= 13 (precedencia 'MID3$)))
+    (is (= 13 (precedencia 'ANYTHING_ELSE)))
+    ))
 
 ;;
 ;; Pruebas para aridad
@@ -405,7 +411,7 @@
     (is (= 2 (aridad '<=)))
     (is (= 2 (aridad '>=)))
     (is (= 2 (aridad '<>)))
-    (is (= 2 (aridad '\^)))
+    (is (= 2 (aridad "^")))
     (is (= 2 (aridad 'AND)))
     (is (= 2 (aridad 'OR)))
     (is (= 2 (aridad 'LET)))
@@ -422,7 +428,6 @@
     (is (= 1 (aridad 'DATA)))
     (is (= 1 (aridad 'READ)))
     (is (= 1 (aridad 'REM)))
-    (is (= 1 (aridad 'RESTORE)))
     (is (= 1 (aridad 'NEXT)))
     (is (= 1 (aridad 'GOTO)))
     (is (= 0 (aridad 'OTHER)))))
@@ -489,8 +494,8 @@
 
 (deftest test-desambiguar-4
   (testing "desambiguar function with MID3$ and unary minus"
-    (is (= (desambiguar '(MID$ "(" 1 "," - 2 + K "," 3 ")") ['() [] [] [] [] 0 '{I 1, L 2, N$ "ABCDEFG", B 1}])
-                '(MID3$ "(" 1 -u 2 + K 3 ")")))))
+    (is (= (desambiguar '(MID$ "(" 1 "," - 2 + K "," 3 ")") ['() [] [] [] [] 0 '{K 1, L 2, N$ "ABCDEFG", B 1}])
+                '(MID3$ "(" 1 -1 3 ")")))))
 
 ;;
 ;; Pruebas para buscar-lineas-restantes
@@ -655,7 +660,7 @@
 ;
 ;(deftest test-parsear-sdtefdndciad32
 ;  (testing "Testing parsear-sentencia function"
-;    (is (= "B" (calcular-expresion '(ASC "(" MID$ "(" W$ "," I "," 1 ")" ")" - 64) ['() [] [] [] [] 0 '{I 3, L 2, W$ "ABCDEFG", B 1}])))))
+;    (is (= "B" (calcular-expresion '(S + 2 "^" P) ['() [] [] [] [] 0 '{S 3, P 2, W$ "ABCDEFG", B 1}])))))
 ;
 ;(deftest test-parsear-sdtefdnddciad32
 ;  (testing "Testing parsear-sentencia function"

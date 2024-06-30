@@ -700,7 +700,7 @@
    ;(println (str "aplicar 4: " operador operando1 operando2 nro-linea))
    (if (or (nil? operando1) (nil? operando2))
      (dar-error 16 nro-linea)  ; Syntax error
-     (if (= operador (symbol "^"))
+     (if (or (= operador (symbol "^")) (= (str operador) "^"))
        (Math/pow operando1 operando2)
        (case operador
          = (if (and (string? operando1) (string? operando2))
@@ -1173,7 +1173,7 @@
         (= token '<=)
         (= token '>=)
         (= token '<>)
-        (= token \^)
+        (= (str token) "^")
         (= token 'AND)
         (= token 'OR)
         (= token 'LET)) 2
