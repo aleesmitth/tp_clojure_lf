@@ -59,6 +59,7 @@
 (declare splitear-symbolo-distinto)       ; Funcion auxiliar
 (declare desambiguar-mid-helper)          ; Funcion auxiliar
 (declare stitch-mid-with-params)          ; Funcion auxiliar
+(declare aplicar-parametros-mid)          ; Funcion auxiliar
 
 (defn -main
   "Alejandro Nicolás Smith 101730"
@@ -375,8 +376,8 @@
 ; 7
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn calcular-expresion [expr amb]
-  ;(spy "rpn" (calcular-rpn (spy "shu" (shunting-yard (spy "des" (desambiguar (spy "pre" (preprocesar-expresion (spy "expr" expr) amb)))))) (amb 1)))
-  (calcular-rpn (shunting-yard (desambiguar (preprocesar-expresion expr amb))) (amb 1))
+  ;(spy "rpn" (calcular-rpn (spy "shu" (shunting-yard (spy "des" (desambiguar (spy "pre" (preprocesar-expresion (spy "expr" expr) amb)) amb)))) (amb 1)))
+  (calcular-rpn (shunting-yard (desambiguar (preprocesar-expresion expr amb) amb)) (amb 1))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -432,7 +433,7 @@
 ; (1 2 +)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn shunting-yard [tokens]
-  (remove #(= % (symbol ","))
+  (remove #(or (= % (symbol ",")) (= (str %) ","))
           (flatten
             (reduce
               (fn [[rpn pila] token]
@@ -1069,22 +1070,44 @@
 ; user=> (desambiguar (list 'MID$ (symbol "(") 1 (symbol ",") '- 2 '+ 'K (symbol ",") 3 (symbol ")")))
 ; (MID3$ ( 1 , -u 2 + K , 3 ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn desambiguar [expr]
-    (desambiguar-mas-menos (concat (map-indexed
-              (fn [i x] (desambiguar-mid-helper x i expr))
-      expr)))
-    )
+(defn desambiguar [expr amb]
+  (desambiguar-mas-menos (aplicar-parametros-mid (concat (map-indexed
+                                   (fn [i x] (desambiguar-mid-helper x i expr))
+                                   expr)
+                                 ) amb)
+                         )
+  )
+
+(defn aplicar-parametros-mid [expr amb]
+  (if (not (some #(or (= % 'MID2$) (= % 'MID3$)) expr))
+    expr
+    (let [mid (drop-while #(not (or (= % 'MID2$) (= % 'MID3$))) expr),
+          principio-params (drop 2 mid),
+          params (take-while #(not= (str %) ")") principio-params),
+          separados-por-comas (partition-by #(= (str %) ",") params),
+          principio-a-concat (take-while #(and (not= % 'MID2$) (not= % 'MID3$)) expr),
+          final-a-concat (drop-while #(not= (str %) ")") principio-params)]
+      (concat
+        principio-a-concat
+        (list (first mid))
+        '("(")
+        (concat
+          (map #(calcular-expresion % amb) separados-por-comas)
+          )
+        final-a-concat)
+      )))
 
 (defn desambiguar-mid-helper [x i whole-list]
-  (if (not (some #(= % 'MID$) whole-list)) x
-  (if (= x 'MID$)
+  (if (not (some #(= % 'MID$) whole-list))
+    x
+    (if (= x 'MID$)
     (let [args (take-while #(not= (str %) ")") (drop (inc i) whole-list))
           num-args (count (filter #(= (str %) ",") (rest (butlast args))))]
       (cond
         (= num-args 1) 'MID2$
         (= num-args 2) 'MID3$
         :else x))
-    (if (= (str x) ",") nil x))))
+    x)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; precedencia: recibe un token y retorna el valor de su
@@ -1108,8 +1131,8 @@
     (= token 'AND) 3
     (= token '=) 4
     (or (= token '<>) (= (str token) "<>") (= token '<) (= token '>) (= token '<=) (= token '>=)) 5
-    (= token '-) 6
-    (= token '+) 7
+    (= token '+) 6
+    (= token '-) 7
     (= token '/) 8
     (= token '*) 9
     (= (str token) "^") 10

@@ -474,22 +474,22 @@
 ;;
 (deftest test-desambiguar-1
   (testing "desambiguar function with unary minus"
-    (is (= (desambiguar '(- 2 * "(" - 3 + 5 - "(" + 2 / 7 ")" ")"))
+    (is (= (desambiguar '(- 2 * "(" - 3 + 5 - "(" + 2 / 7 ")" ")") ['() [] [] [] [] 0 '{I 1, L 2, N$ "ABCDEFG", B 1}])
                 '(-u 2 * "(" -u 3 + 5 - "(" 2 / 7 ")" ")")))))
 
 (deftest test-desambiguar-2
   (testing "desambiguar function with MID$"
-    (is (= (desambiguar '(MID$ "(" 1 "," 2 ")"))
+    (is (= (desambiguar '(MID$ "(" 1 "," 2 ")") ['() [] [] [] [] 0 '{I 1, L 2, N$ "ABCDEFG", B 1}])
            '(MID2$ "(" 1 2 ")")))))
 
 (deftest test-desambiguar-3
   (testing "desambiguar function with MID3$"
-    (is (= (desambiguar '( MID$ "(" 1 "," 2 "," 3 ")"))
+    (is (= (desambiguar '( MID$ "(" 1 "," 2 "," 3 ")") ['() [] [] [] [] 0 '{I 1, L 2, N$ "ABCDEFG", B 1}])
                 '(MID3$ "(" 1 2 3 ")")))))
 
 (deftest test-desambiguar-4
   (testing "desambiguar function with MID3$ and unary minus"
-    (is (= (desambiguar '(MID$ "(" 1 "," - 2 + K "," 3 ")"))
+    (is (= (desambiguar '(MID$ "(" 1 "," - 2 + K "," 3 ")") ['() [] [] [] [] 0 '{I 1, L 2, N$ "ABCDEFG", B 1}])
                 '(MID3$ "(" 1 -u 2 + K 3 ")")))))
 
 ;;
@@ -655,7 +655,7 @@
 ;
 ;(deftest test-parsear-sdtefdndciad32
 ;  (testing "Testing parsear-sentencia function"
-;    (is (= 0 (calcular-expresion '(STR$ "(" B ")" + X$) ['() [] [] [] [] 0 '{X$ "", B 1}])))))
+;    (is (= "B" (calcular-expresion '(ASC "(" MID$ "(" W$ "," I "," 1 ")" ")" - 64) ['() [] [] [] [] 0 '{I 3, L 2, W$ "ABCDEFG", B 1}])))))
 ;
 ;(deftest test-parsear-sdtefdnddciad32
 ;  (testing "Testing parsear-sentencia function"
