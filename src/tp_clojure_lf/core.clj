@@ -509,7 +509,8 @@
                                   (or (number? %2) (string? %2) (variable? %2) (funcion? %2) (= (symbol "(") %2)))
                            (conj (conj %1 (symbol ";")) %2) (conj %1 %2)) nueva),
          ex (partition-by #(= % (symbol ",t")) (stitch-mid-with-params (desambiguar-comas interc))),
-         expresiones (apply concat (map #(partition-by (fn [x] (= x (symbol ";"))) %) ex))]
+         expresiones-raw (apply concat (map #(partition-by (fn [x] (= x (symbol ";"))) %) ex))
+         expresiones (if (nil? (first (first expresiones-raw))) [] expresiones-raw)]
      (imprimir [expresiones amb])))
   )
 
@@ -658,9 +659,9 @@
                (do (dar-error 16 (amb 1)) [nil amb]))  ; Syntax error
         LET (if (= (second (rest sentencia)) '=)
               (let [resu (ejecutar-asignacion (list (first (rest sentencia)) '= (calcular-expresion (rest (rest (rest sentencia))) amb)) amb)]
-              (if (nil? resu)
-                [nil amb]
-                [:sin-errores resu]))
+                (if (nil? resu)
+                  [nil amb]
+                  [:sin-errores resu]))
               (do (dar-error 16 (amb 1)) [nil amb]))
         READ (let [resu (ejecutar-asignacion (list (first (rest sentencia)) '= ((amb 4) (amb 5))) amb)]
                (if (nil? resu)
@@ -811,7 +812,9 @@
   (mapcat
     (fn [sublist]
       (if (= (first sublist) palabra)
-        (map (fn [x] (list palabra x)) (remove #(= % (symbol ",")) (rest sublist)))
+        (if (= (count sublist) 1)
+          [sublist]
+          (map (fn [x] (list palabra x)) (remove #(= % (symbol ",")) (rest sublist))))
         [sublist]))
     n))
 

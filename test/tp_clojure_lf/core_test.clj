@@ -122,6 +122,11 @@
     (let [n (list '(PRINT 1) (list 'NEXT 'A (symbol ",") 'B))]
       (is (= (expandir-nexts n) '((PRINT 1) (NEXT A) (NEXT B)))))))
 
+(deftest test-expandir-next
+  (testing "Probando la funcion expandir-next"
+    (let [n '((NEXT) (NEXT A))]
+      (is (= (expandir-nexts n) '((NEXT) (NEXT A)))))))
+
 (deftest test-expandir-nexts-2-parametros-3-next
   (testing "Probando la funcion expandir-nexts 2 parametros 3 next"
     (let [n (list '(PRINT 1) (list 'NEXT 'A (symbol ",") 'B (symbol ",") 'C))]
